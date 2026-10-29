@@ -67,3 +67,24 @@ def nlms_bank(d, refs, L=70, mu=0.1, delta=1e-6):
     refs = np.asarray(refs, float)
     outs = [nlms(d, refs[:, j], L=L, mu=mu, delta=delta)[0] for j in range(refs.shape[1])]
     return np.column_stack(outs)
+
+
+def rls(d, refs, L=16, lam=0.999, delta=0.01):
+    """RLS-all baseline (DECISIONS M3): forgetting factor lam, P(0) = I / delta.
+    Same inputs/outputs as nlms. Cost O((C*L)^2) per sample."""
+    refs = np.asarray(refs, float)
+    if refs.ndim == 1:
+        refs = refs[:, None]
+    X = _regressors(refs, L)
+    N, M = X.shape
+    w = np.zeros(M)
+    P = np.eye(M) / delta
+    e = np.empty(N)
+    for n in range(N):
+        x = X[n]
+        Px = P @ x
+        k = Px / (lam + x @ Px)
+        e[n] = d[n] - w @ x
+        w += k * e[n]
+        P = (P - np.outer(k, Px)) / lam
+    return e, e ** 2

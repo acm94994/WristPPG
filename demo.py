@@ -44,13 +44,16 @@ if __name__ == "__main__":
     d, refs, fs = preprocess(rec, fs_out=64)
     print(f"{rec['name']}: {len(d)/fs:.0f} s at {fs} Hz, forearm axis = {REF_NAMES[ax]}")
 
-    e, err2 = nlms(d, refs[:, ax], L=16, mu=0.1)
+    e, err2 = nlms(d, refs[:, ax], L=16, mu=0.01)
 
-    hr_raw, _ = track_hr(d, fs)
-    hr_nlms, _ = track_hr(e, fs)
+    e_all, _ = nlms(d, refs, L=16, mu=0.01)
+    hr_raw, _ = track_hr(d, fs, motion=refs)
+    hr_all, _ = track_hr(e_all, fs, motion=refs)
+    hr_nlms, _ = track_hr(e, fs, motion=refs)
     starts, win = window_starts(len(d), fs)
     hr_ecg = ecg_hr_quick(rec["rpeaks_s"], starts, win, fs)
 
     mae = lambda h: np.nanmean(np.abs(h - hr_ecg))
     print(f"MAE raw PPG : {mae(hr_raw):5.1f} BPM")
     print(f"MAE NLMS-1  : {mae(hr_nlms):5.1f} BPM")
+    print(f"MAE NLMS-all: {mae(hr_all):5.1f} BPM")

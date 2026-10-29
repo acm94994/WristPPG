@@ -2,7 +2,7 @@
 
 ## Setup
 ```
-pip install -r requirements.txt
+pip install numpy scipy wfdb
 ```
 Download *Wrist PPG During Exercise* into `data/` (not committed):
 ```
@@ -19,40 +19,30 @@ Check it works: `python demo.py data/s3_run` (or `python demo.py` for a syntheti
 | `forearm_axis(acc_raw)` | src/preprocess.py | 0/1/2, the accel axis used by NLMS-1 and LMS-HK |
 | `lms / nlms(d, refs, L, mu, weights=None)` | src/filters.py | e (cleaned PPG), err2 (learning curve) |
 | `nlms_bank(d, refs, L, mu)` | src/filters.py | (N, C) outputs for NLMS-FV |
-| `track_hr(e, fs)` | src/hr.py | hr_bpm per window, window centre times |
+| `track_hr(e, fs, motion=refs)` | src/hr.py | hr_bpm per window, window centre times |
+| **`run_method(name, rec, mu, L, tau, lam)`** | src/methods.py | dict: hr, t, e, err2, fs (+ msc for CW-NLMS). Names in `METHODS`, tunable params in `TUNABLE` |
+| `score(out, rec)` | src/score.py | per-window table, MAE. Matches windows by time, so 20/35/64 Hz methods score alike |
 | `window_starts(N, fs)` | src/hr.py | window start indices, window length (use in score.py so windows match) |
-
-| `rls(d, refs, L, lam)` | src/rls.py | e, err2 (regularized RLS, M9) |
-| `run(name, rec, **params)` | src/methods.py | dict: fs, d, e, err2, hr, t, flops. `METHODS`, `GRIDS` |
-| `evaluate(name, rec, params)` | src/evaluate.py | per-window DataFrame, per-record dict |
-| `window_metrics`, `true_hr`, `failure_label`, ... | src/score.py | the only ECG reader |
-| `semi_synthetic(rec, seed)` | src/synth.py | (record with known pulse, clean pulse), E13 |
-| `rotate`, `zero_acc_axis`, `no_gyro` | src/perturb.py | perturbed record, E8 |
 
 `mu` can be an (N,) array (variable step size); `weights` can be (C,) or (N, C) (CW-NLMS).
 
-**Adding a method (A):** replace its `_pending(...)` entry in `METHODS` (src/methods.py) with a
-function `f(rec, **params) -> _out(...)`, put its grid in `GRIDS`, then
-`python tune.py --methods CW-NLMS && python run_all.py --methods CW-NLMS && python robustness.py --methods CW-NLMS`.
-Results for other methods are kept. CW-NLMS is already in `MULTI_REF`, so it must accept `drop=` (channel ablation).
-If CW-NLMS adds an `msc` column to its windows, `failure_label` can use the "low MSC" label.
-
-## Pipeline (B, D)
-```
-python tune.py         # LOSO grid, ~1 min on 16 cores  -> results/loso_params.csv, results/grid/
-python run_all.py      # held-out runs + semi-synthetic -> results/main_*.csv*, synth_records.csv, curves.npz
-python robustness.py   # rotation / missing axes / channel ablation, ~2 min -> results/robustness_*
-python tables.py       # -> results/tables/T1..T9.csv, tables.md
-python plots.py        # -> results/figures/F1..F6.png
-```
-All scripts take `--methods ...` and `--jobs N`.
-
 ## Rules
 - Only `score.py` uses ECG (`rpeaks_s`). Never pass it to filters or `track_hr`.
-  `evaluate.py` strips `rpeaks_s` before any method runs (`synth.py` uses R peaks only to build ground truth).
 - One owner per file. `git pull` before work; push small and often.
 - Every setting choice goes in `DECISIONS.md`.
 
+## For B: the loop
+```python
+from src.load import load_record, list_records
+from src.methods import run_method, METHODS
+from src.score import score
+for r in list_records('data'):
+    rec = load_record('data/' + r)
+    for m in METHODS:
+        table, mae = score(run_method(m, rec), rec)
+```
+LOSO: for each held-out subject, grid-search `TUNABLE[m]` on the other 7 subjects' records, then score the held-out subject once. LMS-HK, NLMS-FV and RAW have no tuning.
+
 ## Still to write
-- `src/coherence.py` (A), CW-NLMS + LMS-HK / NLMS-FV configs (A): stubs in src/methods.py
-- Component ablation of CW-NLMS (MSC weighting on/off, variable μ on/off): add as extra configs once CW-NLMS exists
+- LOSO tuning, `run_all.py`, Tables 1–3, extend `score.py` (pulse preservation, failure labels) (B)
+- `robustness.py`, `plots.py` (D)

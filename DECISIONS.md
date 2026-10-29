@@ -23,15 +23,12 @@ Only A changes status to `decided`. Anyone can add a row.
 |---|---|---|---|---|---|
 | M1 | Axis for NLMS-1 | Same forearm (longitudinal) axis as R1b | proposed | | Keeps NLMS-1 comparable to Han & Kim's main reference; IMU only |
 | M2 | NLMS regularisation δ | 1e-6 | proposed | | |
-| M3 | RLS forgetting factor λ, P init | λ = 0.99, P = I / 0.01 | proposed | | |
+| M3 | RLS forgetting factor λ, P init | λ = 0.999 (memory ≈ 1/(1−λ) = 1000 samples ≈ 16 s at 64 Hz), P = I / 0.01; tune λ ∈ {0.998, 0.999} | changed | A, 29 Oct | Was λ = 0.99 (1.6 s memory): on the walking simulation it cancelled the pulse (MAE 28 BPM vs 1.4 at 0.999), same mechanism as a too-large μ |
 | M4 | MSC estimation | `scipy.signal.coherence`, 8 s window, nperseg = 256, noverlap = 192, mean over 0.5–4 Hz | proposed | | Computed vs raw PPG, never ECG |
 | M5 | MSC threshold τ | Tuned over {0, 0.2, 0.3, 0.5} on training subjects | proposed | | |
 | M6 | Weight update rate | MSC weights recomputed every 2 s step, held constant within it | proposed | | All 8 channels always in the regressor |
 | M7 | Variable step size | μ_window = μ × mean(MSC weights of that window) | proposed | | Brief's "step-size control"; keep only if it doesn't hurt on training subjects |
 | M8 | Filter order L | Tuned over {8, 16, 32}; fixed per held-out subject | proposed | | Order is tuned, not adaptive; say so in the report |
-| M9 | RLS-all | **Regularized** RLS on all 8 refs: P(0) = I / 0.01, each sample also adds ρ·u uᵀ to R with u cycling through the unit vectors, floor β/(1−λ), β = 1e-2. LOSO grid λ ∈ {0.99, 0.995, 0.999} × L ∈ {8, 16, 32} | proposed | B, 29 Oct | Plain RLS winds up on band-passed, correlated delayed refs (|e| up to 1e8 on s1_walk / s3_run). Replaces M3's fixed λ = 0.99 with tuning. Cost 4M² + 4M multiplies/sample |
-| M10 | Reproductions in LOSO | LMS-HK and NLMS-FV run with fixed paper settings, not tuned | proposed | B, 29 Oct | They are reproductions; tuning them would no longer be the paper's method |
-| M11 | "raw" row | HR from the band-passed PPG with no canceller, in every table | proposed | B, 29 Oct | Shows what each canceller adds |
 
 ## Reproduction (section 6.1)
 
@@ -46,21 +43,21 @@ Only A changes status to `decided`. Anyone can add a row.
 | # | Decision | Value | Status | Decided by / date | Notes |
 |---|---|---|---|---|---|
 | E1 | Windows | 8 s, 2 s step | decided | A, 28 Oct | Standard; cite Fallet & Vesin 2015/2017 (8 s, 6 s overlap) and Lee et al. 2022. Same for every method |
-| E2 | HR tracker | Hann window, FFT zero-padded to 2048; first window = largest peak in 0.5–3.5 Hz; then ±15 BPM around previous, fallback to global peak | decided | A, 28 Oct | Spectral-peak tracking around the previous estimate is standard (e.g. TROIKA, Zhang 2015); the ±15 BPM range is our own choice, state it as such. Starts from PPG, never from ECG |
-| E3 | Ground-truth HR | 60 / mean RR of R peaks inside each window | proposed | | Only in score.py. Windows matched by centre time, so 20/35/64 Hz methods use the same windows |
+| E2 | HR tracker | Per 8 s window: normalised PPG power spectrum (Hann, nfft 2048); harmonic sum P(f) + 0.5·P(2f); bins within ±10 BPM of {½, 1, 3/2, 2, 3} × the dominant IMU frequency multiplied by 0.1 (down-weighted, not removed). HR path chosen by **Viterbi** over the whole record: Gaussian jump penalty σ = 5 BPM per 2 s step, hard limit ±15 BPM. Same tracker for every method | changed | A, 29 Oct | v1 (plain greedy peak tracking) locked onto the 2F walking artifact (~172 BPM) on s3_walk. v2 (greedy + motion-peak exclusion) fixed s3_run (raw 12 → 3 BPM) but still got stuck on s3_walk even though NLMS-all exposed the pulse at ~98. Viterbi follows Temko 2017 (WFPV + Viterbi decoding); motion harmonics follow Lee 2022 (F, 2F, 3F, 4F). Offline (non-causal), state in report. PPG + IMU only, never ECG. `mode="greedy"` kept for comparison |
+| E3 | Ground-truth HR | 60 / mean RR of R peaks inside each window | proposed | | Only in score.py |
 | E4 | Tuning protocol | Leave-one-subject-out: grid μ ∈ {0.01, 0.05, 0.1, 0.5} × L ∈ {8, 16, 32} × τ on 7 subjects, score held-out subject once | decided | A, 28 Oct | Splits by subject only, never by window |
 | E5 | Main metric | Mean absolute error (BPM) per activity, pooled over held-out subjects | proposed | | |
-| E6 | Waveform metric | Two per-window metrics. **Pulse ratio**: power within ±0.1 Hz of true HR after / before filtering (dB; ≈ 0 = pulse kept). **SNR gain**: SNR after − before, SNR = power within ±0.1 Hz of HR and 2·HR / rest of 0.5–4 Hz (dB) | proposed | B, 29 Oct | The pulse ratio answers the brief's "without attenuating the pulsatile component"; SNR gain is the brief's "PPG SNR gain" |
-| E7 | Failure cases | Window error > 10 BPM; "cadence ≈ HR" if IMU dominant frequency within 0.1 Hz of true HR or its half; else "low MSC" or "other" | proposed | | IMU dominant frequency = peak of the summed spectra of the 3 band-passed accel axes, 0.4–4 Hz (B). "low MSC" needs an `msc` column from CW-NLMS; until then those windows count as "other" |
-| E8 | Robustness | 10 random rotations of accel and gyro triplets; one accel axis zeroed; gyro + ‖ω‖ removed | proposed | | Reduce to 3 rotations if short on time; don't drop. B: same rotation for accel and gyro (sensor re-mounted), applied to the raw record so ‖a‖, ‖ω‖ and the forearm axis are recomputed; split=subject LOSO configs, no retuning |
-| E9 | LOSO objective | Config with the lowest mean over training subjects of each subject's window MAE | proposed | B, 29 Oct | Subject-averaged so long records don't dominate |
-| E10 | Activity-specific split | Second LOSO: tune on the other subjects' records of the same activity only (`split = subject+activity`) | proposed | B, 29 Oct | Brief WP5 "subject-independent and activity-specific splits". Each activity has ≥ 3 subjects |
-| E11 | Spectral-peak error | |largest peak of the cleaned PPG in 0.5–3.5 Hz, no tracking − true HR| (BPM) | proposed | B, 29 Oct | Separates canceller quality from tracker behaviour |
-| E12 | Convergence time | First time the 2 s moving average of the squared error (dB) is within 1 dB of its steady level (median over the second half) | proposed | B, 29 Oct | On real data e² includes the pulse, so often ≈ 0 s; the semi-synthetic version uses (e − s)² and is the one to report |
-| E13 | Waveform ground truth (NMSE, correlation) | Semi-synthetic records: 2-harmonic pulse following the real ECG RR intervals (+0.25 s delay) + real accel/gyro axes through random decaying 0.1 s FIRs at SIR −6 dB + white noise at 20 dB | proposed | B, 29 Oct | Real PPG has no clean reference. Artifact is linear in the IMU = best case for linear cancellers; state as a limitation. R peaks only build the ground truth, the methods never see them |
-| E14 | Computational cost | Multiplies per sample (LMS 2M+1, NLMS 3M+2, RLS 4M²+4M, M = C·L) + measured runtime per second of signal | proposed | B, 29 Oct | |
-| E15 | Severe motion | Windows in the top 10 % of std(‖a‖) (raw, m/s²), pooled over all records | proposed | B, 29 Oct | Brief WP6. Also shown as MAE per motion decile |
-| E16 | Channel ablation | Leave one of the 8 references out, for multi-reference methods, split=subject LOSO configs | proposed | B, 29 Oct | Component ablation (MSC weighting, variable μ) needs CW-NLMS |
+| E6 | Waveform metric | Power within ±0.1 Hz of true HR after / before filtering | proposed | | |
+| E7 | Failure cases | Window error > 10 BPM; "cadence ≈ HR" if IMU dominant frequency within 0.1 Hz of true HR or its half; else "low MSC" or "other" | proposed | | |
+| E8 | Robustness | 10 random rotations of accel and gyro triplets; one accel axis zeroed; gyro + ‖ω‖ removed | proposed | | Reduce to 3 rotations if short on time; don't drop |
+
+## Observations
+
+- 29 Oct, s3_run / s3_walk: NLMS-1 with μ = 0.1 made HR worse (run 12 → 49 BPM). On a walking-like simulation μ = 0.1 cancels the pulse when HR is near the arm-swing frequency; μ ≤ 0.03 fixes it. demo/diag now use μ = 0.01; LOSO tunes μ properly.
+- 29 Oct: walking PPG's strongest peak is the 2F bounce artifact, which a single forearm-axis reference cannot model; NLMS-all (which includes ‖a‖) removes it in simulation. Supports the multi-reference argument; check on real data.
+
+- 29 Oct: all 7 methods run end-to-end through src/methods.py:run_method on a walking simulation (MAE 0.9–1.6 BPM except RLS at λ = 0.99). CW-NLMS ≈ 1 s per 5-min record, RLS ≈ 1 s.
+- 29 Oct, simulations with buried pulse: Viterbi rescues NLMS-all / CW-NLMS on walk-like data (≈95 → 0.5 BPM); raw and NLMS-1 still fail there because the single forearm axis cannot model the 2F bounce, so the pulse stays buried. Good illustration for the report.
 
 ## Cut order if behind schedule
 
