@@ -1,73 +1,71 @@
-"""Robustness tests and channel ablation (DECISIONS E8, E16), with the split=subject LOSO configs
-(no retuning: a deployed filter would not be retuned after the sensor moved or a channel died).
+"""Step 4: robustness tests (DECISIONS E8) for NLMS-all and CW-NLMS with LOSO-chosen settings.
 
-    python robustness.py                   # all tuned methods, 10 rotations
-    python robustness.py --n-rot 3         # cut order item 1
+Cases per record:
+  original          unchanged
+  rot_0 .. rot_9    accel and gyro rotated by the same random rotation (fixed seed)
+  forearm_zeroed    the forearm accelerometer axis set to zero (strongest single axis)
+  no_gyro           all gyroscope channels set to zero (also zeroes |w|)
 
-Conditions (test column):
-  baseline                 unperturbed
-  rotation    rot<k>       same random 3-D rotation of accel and gyro, k = 0..n_rot-1 (seeded)
-  missing     zero_acc_<x|y|z>, no_gyro
-  ablation    drop_<ch>    leave one of the 8 references out (multi-reference methods only)
-
-Writes results/robustness_windows.csv.gz, results/robustness_records.csv
+    python robustness.py
+    python robustness.py --n-rot 3      # faster (cut order in DECISIONS.md)
+Outputs: results/robustness.csv (per record), results/table_robustness.csv (summary)
 """
-import argparse
-import os
+import argparse, json, os
+import numpy as np
 import pandas as pd
-from src import methods
-from src.jobs import run_jobs, DATA
-from src.load import list_records
-from src.preprocess import REF_NAMES
+from scipy.spatial.transform import Rotation
+from src.runner import records, get_record, run_jobs, done_keys
+from src.methods import run_method
+from src.preprocess import forearm_axis
+from src.score import score
 
-OUT = "results"
+METHODS = ["NLMS-all", "CW-NLMS"]
+FIELDS = ["method", "case", "record", "subject", "activity", "mae"]
+OUT = "results/robustness.csv"
 
 
-def conditions(name, n_rot, ablation):
-    yield "baseline", "baseline", None, {}
-    for k in range(n_rot):
-        yield "rotation", f"rot{k}", ("rotate", k), {}
-    for i, ax in enumerate("xyz"):
-        yield "missing", f"zero_acc_{ax}", ("zero_acc_axis", i), {}
-    yield "missing", "no_gyro", ("no_gyro", None), {}
-    if ablation and name in methods.MULTI_REF:
-        for ch in REF_NAMES:
-            yield "ablation", f"drop_{ch}", None, {"drop": (ch,)}
+def perturb(rec, case, rots):
+    r = dict(rec)
+    if case.startswith("rot_"):
+        R = rots[int(case[4:])].as_matrix()
+        r["acc"], r["gyro"] = rec["acc"] @ R.T, rec["gyro"] @ R.T
+    elif case == "forearm_zeroed":
+        acc = rec["acc"].copy()
+        acc[:, forearm_axis(rec["acc"])] = 0.0
+        r["acc"] = acc
+    elif case == "no_gyro":
+        r["gyro"] = np.zeros_like(rec["gyro"])
+    return r
+
+
+def job(j):
+    method, case, rec_name, params, n_rot = j
+    rots = Rotation.random(n_rot, random_state=0)
+    rec = get_record(rec_name)
+    _, mae = score(run_method(method, perturb(rec, case, rots), **params), rec)
+    return [{"method": method, "case": case, "record": rec_name, "subject": rec["subject"],
+             "activity": rec["activity"], "mae": mae}]
 
 
 if __name__ == "__main__":
-    ap = argparse.ArgumentParser()
-    ap.add_argument("--methods", nargs="+", default=[m for m in methods.available() if m != "raw"])
-    ap.add_argument("--n-rot", type=int, default=10)
-    ap.add_argument("--no-ablation", action="store_true")
-    ap.add_argument("--jobs", type=int, default=None, help="worker processes (default: all cores)")
-    args = ap.parse_args()
-
-    sel = pd.read_csv(os.path.join(OUT, "loso_params.csv"))
-    sel = sel[(sel["split"] == "subject") & sel["method"].isin(args.methods)]
-    chosen = {(r.method, r.held_out): methods.parse_key(r.params) for r in sel.itertuples()}
-
+    p = argparse.ArgumentParser()
+    p.add_argument("--workers", type=int, default=max(1, (os.cpu_count() or 2) - 1))
+    p.add_argument("--n-rot", type=int, default=10)
+    a = p.parse_args()
+    lo = pd.read_csv("results/loso.csv")
+    P = {(r.subject, r.method): json.loads(r.params) for r in lo.itertuples()}
+    cases = ["original"] + [f"rot_{k}" for k in range(a.n_rot)] + ["forearm_zeroed", "no_gyro"]
+    done = done_keys(OUT, ["method", "case", "record"])
     jobs = []
-    for name in args.methods:
-        for test, cond, transform, extra in conditions(name, args.n_rot, not args.no_ablation):
-            for r in list_records(DATA):
-                opts = {"tags": {"test": test, "condition": cond}}
-                if transform:
-                    opts["transform"] = transform
-                jobs.append((name, r, {**chosen[(name, r.split("_")[0])], **extra}, opts))
-    print(f"{len(jobs)} runs")
-    res = run_jobs(jobs, args.jobs)
+    for r in records():
+        s = get_record(r)["subject"]
+        jobs += [(m, c, r, P[(s, m)], a.n_rot) for m in METHODS for c in cases if (m, c, r) not in done]
+    run_jobs(job, jobs, OUT, FIELDS, a.workers)
 
-    for df, fname in ((pd.concat([w for w, _ in res], ignore_index=True), "robustness_windows.csv.gz"),
-                      (pd.DataFrame([r for _, r in res]), "robustness_records.csv")):
-        path = os.path.join(OUT, fname)
-        if os.path.exists(path):
-            old = pd.read_csv(path)
-            df = pd.concat([old[~old["method"].isin(args.methods)], df], ignore_index=True)
-        df.to_csv(path, index=False)
-        print(f"wrote {path} ({len(df)} rows)")
-
-    w = pd.read_csv(os.path.join(OUT, "robustness_windows.csv.gz"))
-    print("\nMAE (BPM) by condition:")
-    print(w.pivot_table(index=["test", "condition"], columns="method", values="abs_err",
-                        aggfunc="mean", sort=False).round(1).to_string())
+    df = pd.read_csv(OUT)
+    df = df[df.case.isin(cases)]
+    df["group"] = df.case.where(~df.case.str.startswith("rot_"), "rotated")
+    t = df.groupby(["method", "group"]).mae.agg(["mean", "median"]).round(1).unstack(0)
+    t = t.reindex(["original", "rotated", "forearm_zeroed", "no_gyro"])
+    t.to_csv("results/table_robustness.csv")
+    print("\nRobustness: MAE (BPM) over records\n", t)
