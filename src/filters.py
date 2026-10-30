@@ -69,14 +69,20 @@ def nlms_bank(d, refs, L=70, mu=0.1, delta=1e-6):
     return np.column_stack(outs)
 
 
-def rls(d, refs, L=16, lam=0.999, delta=0.01):
-    """RLS-all baseline (DECISIONS M3): forgetting factor lam, P(0) = I / delta.
-    Same inputs/outputs as nlms. Cost O((C*L)^2) per sample."""
+def rls(d, refs, L=16, lam=0.999, delta=0.01, beta=1e-2):
+    """RLS-all baseline (DECISIONS M3, M9): forgetting factor lam, P(0) = I / delta.
+    Same inputs/outputs as nlms. Cost O((C*L)^2) per sample.
+
+    Regularized: band-passed, delayed IMU channels are strongly correlated, so most directions of
+    the C*L regressor are barely excited and plain RLS winds up (P grows as lam^-n there; |e| up
+    to 1e5 on s1_walk). Every sample also adds rho * u u^T to R = P^-1, u cycling through the unit
+    vectors, which keeps R above about beta / (1 - lam) * I. beta = 0 gives plain RLS."""
     refs = np.asarray(refs, float)
     if refs.ndim == 1:
         refs = refs[:, None]
     X = _regressors(refs, L)
     N, M = X.shape
+    rho = beta / (1 - lam) * (1 - lam ** M)     # per-visit increment that holds the floor
     w = np.zeros(M)
     P = np.eye(M) / delta
     e = np.empty(N)
@@ -87,4 +93,10 @@ def rls(d, refs, L=16, lam=0.999, delta=0.01):
         e[n] = d[n] - w @ x
         w += k * e[n]
         P = (P - np.outer(k, Px)) / lam
+        if beta:                               # Sherman-Morrison for R + rho * e_i e_i^T
+            i = n % M
+            Pi = P[:, i].copy()
+            P -= np.outer(Pi, Pi) * (rho / (1 + rho * Pi[i]))
+        if n % 64 == 0:
+            P = (P + P.T) / 2                  # round-off makes P drift from symmetric
     return e, e ** 2

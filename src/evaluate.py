@@ -5,9 +5,19 @@ evaluate(name, rec, params) -> (windows DataFrame, record-level dict)
 import time
 import numpy as np
 import pandas as pd
-from src import methods, score
+from src import score
+from src.configs import flops, params_key
+from src.methods import run_method
 from src.preprocess import preprocess
 from src.synth import clean_like_d
+
+
+def run(name, rec, **params):
+    """run_method plus what scoring needs: d (the canceller input at the method's rate) and flops."""
+    out = run_method(name, rec, **params)
+    out["d"] = preprocess(rec, fs_out=out["fs"])[0]
+    out["flops"] = flops(name, params)
+    return out
 
 
 def imu_features(rec, t_center, win_s=8):
@@ -29,13 +39,15 @@ def evaluate(name, rec, params, clean=None, keep_curve=False, **tags):
     record['curve_clean'] = (e - s)^2 when clean is given."""
     imu_rec = {k: v for k, v in rec.items() if k != "rpeaks_s"}     # ECG never reaches a method
     t0 = time.perf_counter()
-    out = methods.run(name, imu_rec, **params)
+    out = run(name, imu_rec, **params)
     runtime = time.perf_counter() - t0
 
-    base = {"method": name, "params": methods.params_key(params), "record": rec["name"],
+    base = {"method": name, "params": params_key(params), "record": rec["name"],
             "subject": rec["subject"], "activity": rec["activity"], **tags}
     win = pd.DataFrame(score.window_metrics(rec, out))
     win["imu_freq"], win["motion"] = imu_features(imu_rec, out["t"])
+    if "msc" in out:                     # CW-NLMS: strongest thresholded MSC weight (0 = no ref coherent)
+        win["msc"] = out["msc"].max(1)
     win = win.assign(**base)
 
     dur = len(out["d"]) / out["fs"]

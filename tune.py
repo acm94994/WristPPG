@@ -14,7 +14,7 @@
 import argparse
 import os
 import pandas as pd
-from src import methods
+from src.configs import GRIDS, METHODS
 from src.jobs import run_jobs, DATA
 from src.load import list_records
 
@@ -27,8 +27,8 @@ def run_grid(name, records, n_workers, force=False):
     if os.path.exists(path) and not force:
         print(f"{name}: cached grid {path}")
         return pd.read_csv(path)
-    jobs = [(name, r, p, {}) for p in methods.GRIDS[name] for r in records]
-    print(f"{name}: {len(jobs)} runs ({len(methods.GRIDS[name])} configs x {len(records)} records)")
+    jobs = [(name, r, p, {}) for p in GRIDS[name] for r in records]
+    print(f"{name}: {len(jobs)} runs ({len(GRIDS[name])} configs x {len(records)} records)")
     res = run_jobs(jobs, n_workers)
     win = pd.concat([w for w, _ in res], ignore_index=True)
     os.makedirs(GRID_DIR, exist_ok=True)
@@ -61,7 +61,7 @@ def select(name, win):
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
-    ap.add_argument("--methods", nargs="+", default=methods.available())
+    ap.add_argument("--methods", nargs="+", default=METHODS)
     ap.add_argument("--jobs", type=int, default=None, help="worker processes (default: all cores)")
     ap.add_argument("--force", action="store_true", help="recompute cached grids")
     args = ap.parse_args()

@@ -20,7 +20,7 @@ import argparse
 import os
 import numpy as np
 import pandas as pd
-from src import methods
+from src.configs import METHODS, parse_key
 from src.jobs import run_jobs, DATA
 from src.load import list_records
 
@@ -40,7 +40,7 @@ def build_jobs(sel, names, records):
         by_subject.setdefault(r.split("_")[0], []).append(r)
     jobs = []
     for row in sel[sel["method"].isin(names)].itertuples():
-        params = methods.parse_key(row.params)
+        params = parse_key(row.params)
         recs = [r for r in by_subject[row.held_out]
                 if row.activity == "all" or r.split("_", 1)[1] == row.activity]
         for r in recs:
@@ -54,7 +54,7 @@ def build_jobs(sel, names, records):
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
-    ap.add_argument("--methods", nargs="+", default=methods.available())
+    ap.add_argument("--methods", nargs="+", default=METHODS)
     ap.add_argument("--jobs", type=int, default=None, help="worker processes (default: all cores)")
     args = ap.parse_args()
 
