@@ -75,7 +75,7 @@ def rls(d, refs, L=16, lam=0.999, delta=0.01, beta=1e-2):
 
     Regularized: band-passed, delayed IMU channels are strongly correlated, so most directions of
     the C*L regressor are barely excited and plain RLS winds up (P grows as lam^-n there; |e| up
-    to 1e5 on s1_walk). Every sample also adds rho * u u^T to R = P^-1, u cycling through the unit
+    to 2.5e5 on s1_walk). Every sample also adds rho * u u^T to R = P^-1, u cycling through the unit
     vectors, which keeps R above about beta / (1 - lam) * I. beta = 0 gives plain RLS."""
     refs = np.asarray(refs, float)
     if refs.ndim == 1:

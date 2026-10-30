@@ -1,8 +1,7 @@
-"""Parallel evaluate() jobs shared by tune.py, run_all.py and robustness.py.
+"""Parallel evaluate() jobs for tune.py and run_all.py.
 
 A job is (method, record_name, params, opts):
   opts["synth_seed"]  : run on semi_synthetic(rec, seed) instead (adds NMSE / correlation)
-  opts["transform"]   : (fn_name, arg) applied to the record first, fn from perturb.TRANSFORMS
   opts["tags"]        : extra constant columns
   opts["keep_curve"]  : also return the learning curve
 Records are loaded once per worker process.
@@ -13,7 +12,6 @@ from concurrent.futures import ProcessPoolExecutor
 from functools import lru_cache
 from src.load import load_record
 from src.evaluate import evaluate
-from src.perturb import TRANSFORMS
 from src.synth import semi_synthetic
 
 DATA = "data"
@@ -29,9 +27,6 @@ def _job(job):
     rec, clean = record(rec_name), None
     if "synth_seed" in opts:
         rec, clean = semi_synthetic(rec, seed=opts["synth_seed"])
-    if "transform" in opts:
-        fn, arg = opts["transform"]
-        rec = TRANSFORMS[fn](rec, arg)
     return evaluate(name, rec, params, clean=clean, keep_curve=opts.get("keep_curve", False),
                     **opts.get("tags", {}))
 

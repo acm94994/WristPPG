@@ -12,7 +12,7 @@ Methods (names fixed, see DECISIONS.md):
   RLS-all  RLS, all 8 references                                                        (M3)
   CW-NLMS  NLMS, all 8 references scaled by MSC weights, variable step size              (M4-M7)
   RAW      no filtering (reference row for the tables)
-Tunable: mu, L (all except the two reproductions), tau and vss (CW-NLMS).
+Tunable parameters per method are in TUNABLE; the two reproductions keep their papers' settings.
 ECG is never used here.
 """
 import numpy as np

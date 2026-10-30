@@ -1,7 +1,7 @@
-"""Scoring against ECG (the ONLY module that uses ECG). DECISIONS E3, E5-E7, E11-E13.
+"""Scoring against ECG, the only module that reads ECG (DECISIONS E3, E5-E7, E11-E13).
 
-Windows are matched by TIME, so methods running at 20/35/64 Hz are scored identically.
-score() is the quick MAE used by demo/robustness; window_metrics() is the full per-window
+Windows are matched by time, so methods running at 20/35/64 Hz are scored identically.
+score() is the quick MAE used by robustness.py; window_metrics() is the full per-window
 table used by evaluate.py.
 """
 import numpy as np

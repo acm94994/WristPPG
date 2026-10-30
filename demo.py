@@ -1,24 +1,14 @@
-"""First end-to-end check: NLMS-1 on one record (or synthetic data if no record given).
+"""Smoke test: raw PPG vs NLMS-1 vs NLMS-all on one record (or synthetic data if none given).
 
   python demo.py data/s3_run      # real record
   python demo.py                  # synthetic sanity test, no data needed
-
-The ECG comparison here is a quick sanity print only. Real scoring lives in score.py (B).
 """
 import sys
 import numpy as np
 from src.preprocess import preprocess, forearm_axis, REF_NAMES
 from src.filters import nlms
-from src.hr import track_hr, window_starts
-
-
-def ecg_hr_quick(rpeaks_s, starts, win, fs):
-    out = []
-    for s in starts:
-        t0, t1 = s / fs, (s + win) / fs
-        r = rpeaks_s[(rpeaks_s >= t0) & (rpeaks_s < t1)]
-        out.append(60 / np.mean(np.diff(r)) if len(r) > 1 else np.nan)
-    return np.array(out)
+from src.hr import track_hr
+from src.score import ecg_hr_at
 
 
 def synthetic(fs=256, T=120, hr_hz=1.5, cad_hz=2.6):
@@ -44,16 +34,9 @@ if __name__ == "__main__":
     d, refs, fs = preprocess(rec, fs_out=64)
     print(f"{rec['name']}: {len(d)/fs:.0f} s at {fs} Hz, forearm axis = {REF_NAMES[ax]}")
 
-    e, err2 = nlms(d, refs[:, ax], L=16, mu=0.01)
-
-    e_all, _ = nlms(d, refs, L=16, mu=0.01)
-    hr_raw, _ = track_hr(d, fs, motion=refs)
-    hr_all, _ = track_hr(e_all, fs, motion=refs)
-    hr_nlms, _ = track_hr(e, fs, motion=refs)
-    starts, win = window_starts(len(d), fs)
-    hr_ecg = ecg_hr_quick(rec["rpeaks_s"], starts, win, fs)
-
-    mae = lambda h: np.nanmean(np.abs(h - hr_ecg))
-    print(f"MAE raw PPG : {mae(hr_raw):5.1f} BPM")
-    print(f"MAE NLMS-1  : {mae(hr_nlms):5.1f} BPM")
-    print(f"MAE NLMS-all: {mae(hr_all):5.1f} BPM")
+    outputs = {"raw PPG": d,
+               "NLMS-1": nlms(d, refs[:, ax], L=16, mu=0.01)[0],
+               "NLMS-all": nlms(d, refs, L=16, mu=0.01)[0]}
+    for label, e in outputs.items():
+        hr, t = track_hr(e, fs, motion=refs)
+        print(f"MAE {label:8s}: {np.nanmean(np.abs(hr - ecg_hr_at(t, rec['rpeaks_s']))):5.1f} BPM")
