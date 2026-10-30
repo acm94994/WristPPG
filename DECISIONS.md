@@ -29,6 +29,7 @@ Only A changes status to `decided`. Anyone can add a row.
 | M6 | Weight update rate | MSC weights recomputed every 2 s step, held constant within it | proposed | | All 8 channels always in the regressor |
 | M7 | Variable step size | μ_window = μ × mean(MSC weights of that window) | proposed | | Brief's "step-size control"; keep only if it doesn't hurt on training subjects |
 | M8 | Filter order L | Tuned over {8, 16, 32}; fixed per held-out subject | proposed | | Order is tuned, not adaptive; say so in the report |
+| M9 | RLS regularization | `filters.rls` adds ρ·u uᵀ to R = P⁻¹ each sample, u cycling through the unit vectors, so R stays above ≈ β/(1−λ)·I; β = 1e-2. λ ∈ {0.998, 0.999} and L ∈ {8, 16, 32} tuned by LOSO (M3, M8) | proposed | B, 30 Oct | Plain RLS winds up on band-passed, correlated delayed refs: s1_walk |e| up to 2.5e5 at all 6 settings, blow-up after ≈ 200 s at λ = 0.998 and ≈ 400 s at 0.999 (P grows as λ⁻ⁿ in unexcited directions). s3_run (307 s) only survives λ = 0.999 because it ends first. Regularized: stable everywhere, s1_walk 2.2 BPM, s3_run 1.7–1.8 BPM; same as plain RLS where plain is stable. Cost unchanged, O(M²) |
 
 ## Reproduction (section 6.1)
 
