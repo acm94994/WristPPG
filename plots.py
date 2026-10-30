@@ -1,4 +1,4 @@
-"""Step 5: report figures from the CSVs (run after final.py and robustness.py).
+"""Report figures (run after run_all.py and robustness.py).
 
     python plots.py                    # learning curves for s3_run
     python plots.py --record s4_run    # a different example record
@@ -9,6 +9,7 @@ Outputs (results/, PNG + PDF):
 For the spectrogram example figures use diag.py (e.g. python diag.py data/s3_walk).
 """
 import argparse
+import numpy as np
 import pandas as pd
 import matplotlib
 matplotlib.use("Agg")
@@ -27,14 +28,18 @@ def save(fig, name):
     print("saved", f"results/{name}.png/.pdf")
 
 
-# 1. learning curves
-c = pd.read_csv("results/curves.csv")
-c = c[c.record == a.record]
+# 1. learning curves: stored as 1 s moving averages at fs Hz, smoothed here to 2 s
+z = np.load("results/curves.npz")
+fs = int(z["fs"])
 fig, ax = plt.subplots(figsize=(3.5, 2.4))                  # one IEEE column
-for m, cm in c.groupby("method", sort=False):
+for key in z.files:
+    if not (key.startswith("real|") and key.endswith("|" + a.record)):
+        continue
+    m = key.split("|")[1]
     if m == "RAW":
         continue
-    ax.plot(cm.t_s, cm.err2_smooth, lw=1, label=m)
+    c = np.convolve(z[key], np.ones(2 * fs) / (2 * fs), mode="valid")
+    ax.plot(np.arange(len(c)) / fs, c, lw=1, label=m)
 ax.set_yscale("log")
 ax.set_xlabel("time (s)")
 ax.set_ylabel("e² (2 s moving avg)")

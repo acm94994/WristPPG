@@ -6,9 +6,10 @@ Per 8 s window (2 s step):
   2. Harmonic sum: score(f) = P(f) + harm_weight * P(2f), so the pulse fundamental beats
      its own 2nd harmonic.
   3. Motion harmonics: if `motion` refs are given, find the dominant IMU frequency f_m per
-     window and multiply bins within +/- motion_tol_bpm of {1/2, 1, 3/2, 2, 3} x f_m (3/2 catches the 3rd arm-swing harmonic when the IMU peak is the step frequency) by
-     motion_atten (down-weighted, not removed, so cadence ~ HR is still possible).
-     Follows the F/2F/3F/4F analysis of Lee et al. 2022.
+     window and multiply bins within +/- motion_tol_bpm of {1/2, 1, 3/2, 2, 3} x f_m by
+     motion_atten (down-weighted, not removed, so cadence ~ HR is still possible). 3/2 catches
+     the 3rd arm-swing harmonic when the IMU peak is the step frequency. Follows the
+     F/2F/3F/4F analysis of Lee et al. 2022.
   4. mode="viterbi" (default): best HR path over the whole record, with a Gaussian
      penalty on window-to-window jumps (sigma_bpm) and a hard limit (max_jump_bpm).
      Offline, like Temko 2017 (WFPV + Viterbi). mode="greedy": window-by-window peak

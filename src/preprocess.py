@@ -43,9 +43,3 @@ def preprocess(rec, fs_out=64):
     d = (d - d.mean()) / (d.std() + 1e-12)
     return d, refs, fs_out
 
-
-def radial_ref(rec, axis):
-    """Han & Kim 'radial' reference: magnitude of the two non-forearm accel axes (raw).
-    Pass it through preprocess-style filtering yourself if you use it (see LMS-HK)."""
-    others = [i for i in range(3) if i != axis]
-    return np.linalg.norm(rec["acc"][:, others], axis=1)

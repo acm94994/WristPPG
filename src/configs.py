@@ -1,7 +1,6 @@
-"""Tuning grids and bookkeeping around A's src/methods.py (run_method, METHODS, TUNABLE).
-B's file: tune.py, run_all.py and evaluate.py import from here, so methods.py stays A's alone.
+"""LOSO tuning grids (E4) and cost model (E14) for the methods in src/methods.py.
 
-GRIDS[m] lists the configs tried in LOSO (E4); one empty entry = fixed settings.
+GRIDS[m] lists the configs tried for method m; a single empty dict means fixed settings.
 """
 from src.methods import METHODS, TUNABLE
 

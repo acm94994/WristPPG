@@ -2,11 +2,11 @@
 
     python tables.py        -> results/tables/T*.csv and results/tables/tables.md
 
-T1 MAE per activity (both splits)        T6 channel ablation (dMAE vs baseline)
+T1 MAE per activity (both splits)
 T2 MAE per held-out subject              T7 failure cases (E7)
 T3 all real-data metrics per method      T8 severe motion (E15)
 T4 semi-synthetic benchmark (E13)        T9 LOSO-chosen configs per fold
-T5 robustness (rotation, missing axes)
+T5 robustness (rotation, forearm axis zeroed, no gyro)
 """
 import os
 import numpy as np
@@ -18,6 +18,7 @@ OUT = "results"
 TAB = os.path.join(OUT, "tables")
 ORDER = list(methods.METHODS)                      # column order = registry order
 SEVERE_Q = 0.9                                     # E15: top 10 % of windows by motion
+MSC_TAU = 0.3                                      # E7: "low MSC" if no CW-NLMS weight reaches this
 
 
 def _cols(df):
@@ -71,28 +72,16 @@ def t4(syn):
     return df.loc[[m for m in ORDER if m in df.index]]
 
 
-def t5(rw):
-    rw = rw[rw["test"] != "ablation"]
-    mae = rw.groupby(["method", "condition"])["abs_err"].mean().unstack("method")
-    rot = mae.loc[mae.index.str.startswith("rot")]
-    rows = {"baseline": mae.loc["baseline"],
-            f"rotation, mean of {len(rot)}": rot.mean(),
-            "rotation, min": rot.min(), "rotation, max": rot.max()}
-    for c in ["zero_acc_x", "zero_acc_y", "zero_acc_z", "no_gyro"]:
-        rows[c] = mae.loc[c]
-    return _cols(pd.DataFrame(rows).T).rename_axis("condition")
-
-
-def t6(rw):
-    rw = rw[rw["test"].isin(["baseline", "ablation"])]
-    mae = rw.groupby(["method", "condition"])["abs_err"].mean().unstack("method")
-    d = (mae - mae.loc["baseline"]).drop("baseline")
-    d.index = d.index.str.removeprefix("drop_")
-    return _cols(d.dropna(axis=1, how="all")).rename_axis("dropped channel (dMAE, BPM)")
+def t5(rob):
+    """robustness.csv (robustness.py): MAE per record and case -> mean and median over records."""
+    rob = rob.assign(group=rob["case"].where(~rob["case"].str.startswith("rot_"), "rotated"))
+    t = rob.groupby(["group", "method"])["mae"].agg(["mean", "median"]).unstack("method")
+    t.columns = [f"{m}, {stat}" for stat, m in t.columns]
+    return t.reindex(["original", "rotated", "forearm_zeroed", "no_gyro"]).rename_axis("condition")
 
 
 def t7(w):
-    w = w[w["split"] == "subject"].assign(label=lambda x: failure_label(x))
+    w = w[w["split"] == "subject"].assign(label=lambda x: failure_label(x, msc_tau=MSC_TAU))
     pct = w.groupby("method")["label"].value_counts(normalize=True).unstack().fillna(0) * 100
     cols = [c for c in ["ok", "cadence≈HR", "low MSC", "other", "no ECG"] if c in pct]
     return pct.loc[[m for m in ORDER if m in pct.index], cols].rename_axis("% of windows")
@@ -118,8 +107,8 @@ if __name__ == "__main__":
     rec = pd.read_csv(os.path.join(OUT, "main_records.csv"))
     syn = pd.read_csv(os.path.join(OUT, "synth_records.csv"))
     sel = pd.read_csv(os.path.join(OUT, "loso_params.csv"))
-    rob = os.path.join(OUT, "robustness_windows.csv.gz")
-    rw = pd.read_csv(rob) if os.path.exists(rob) else None
+    rob = os.path.join(OUT, "robustness.csv")
+    rob = pd.read_csv(rob) if os.path.exists(rob) else None
 
     tables = [
         ("T1", "HR MAE (BPM) per activity, held-out subjects, windows pooled", t1(w), "{:.1f}"),
@@ -131,9 +120,8 @@ if __name__ == "__main__":
         ("T8", "Severe motion (E15)", t8(w), "{:.1f}"),
         ("T9", "LOSO-chosen config per held-out subject (split=subject)", t9(sel), "{}"),
     ]
-    if rw is not None:
-        tables += [("T5", "Robustness: HR MAE (BPM), LOSO configs, no retuning", t5(rw), "{:.1f}"),
-                   ("T6", "Channel ablation: change in HR MAE when one reference is dropped", t6(rw), "{:+.1f}")]
+    if rob is not None:
+        tables += [("T5", "Robustness: HR MAE (BPM) per record, LOSO configs, no retuning", t5(rob), "{:.1f}")]
     tables.sort(key=lambda t: t[0])
 
     md = []
