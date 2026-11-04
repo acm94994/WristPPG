@@ -81,7 +81,7 @@ Hold + tracker is one record: s9_walk 96.4 -> 58.6. Without s9_walk every method
 
 Correction: the table above does not test gating on its own. The gate reads tracked HR, and on s4_run
 (73% of time within 6 BPM of a line) it never fired: hold_frac is 0 for every method, because tracked HR
-in the zone averaged 147 BPM against a true 173. In 11 of the 18 records with a zone, tracked HR there is
+in the zone averaged 147 BPM against a true 173. In 12 of the 18 records with a zone, tracked HR there is
 more than 10 BPM from the truth (census.csv, tracked_hr_zone vs true_hr_zone).
 
 ECG-gated upper bound (`--gate-hr ecg`, results/collision_oracle): the gate gets the true HR. Not a usable
@@ -100,7 +100,7 @@ weights took s4_run from 25.8 to 62.7 BPM. The negative conclusion stands, now o
 
 Why it fails: held weights go stale at once. Epsilon is about 0.55 at the tuned settings and 0.33-0.48 at
 mu = 0.01, against 0.05-0.2 in simulation. The slowly drifting coupling the method assumes is not there.
-Exploratory fixed mu = 0.01: no method beat NLMS either (18.83; mu cut 18.67, hold + tracker 19.29).
+Exploratory fixed mu = 0.01 (results/collision_mu001): no method beat NLMS either (18.83; mu cut 18.67, hold + tracker 19.29).
 That same run has NLMS at 18.83 against 23.90 with tuned mu. It was not tuned by LOSO, so it is not a
 result, but the tuned setting is worth a second look.
 
@@ -109,12 +109,12 @@ the filter output contains the pulse, so s1_high_resistance_bike showed 57% coll
 
 ## Recommendation
 Report the census and this negative result, including the ECG-gated upper bound. Do not add collision
-gating to the main method. The report section is report/extension_section.tex.
+gating to the main method. This is Section 8 of the project report, which lives with the report
+(DSP_PPG/), not in this repo.
 
 ## Run on real data
     python run_collision.py --data data --out results/collision --loso results/loso_params.csv
     python run_collision.py --data data --out results/collision_oracle --loso results/loso_params.csv --gate-hr ecg
-    python make_report_section.py      # writes report/extension_section.tex from the result files
 
 1. `census.csv`: how much time is within 6 and 15 BPM of a cancelled line, and for how long, plus mean
    tracked and true HR inside the zone.

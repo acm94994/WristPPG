@@ -19,6 +19,15 @@ python tables.py        # T1-T9             -> results/tables/
 python plots.py         # figures           -> results/fig_*.png/.pdf
 python diag.py data/s3_walk   # spectrogram diagnostics for one record
 ```
+Post-submission extensions (heart rate near cadence), after `tune.py` has written `results/loso_params.csv`:
+```
+python run_collision.py --data data --out results/collision --loso results/loso_params.csv
+python run_collision.py --data data --out results/collision_oracle --loso results/loso_params.csv --gate-hr ecg
+python run_option3.py --data data --out results/option3 --loso results/loso_params.csv --inject
+python analyze_real.py        # summary of the three runs above
+```
+See COLLISION.md and OPTION3.md. `--gate-hr ecg` is an upper bound that gives the gate the true HR; it is
+not a usable method.
 Each step only reads what the previous ones wrote, so any step can be rerun on its own.
 `tune.py` and `run_all.py` take `--methods` to (re)run a subset.
 
