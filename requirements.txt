@@ -4,4 +4,3 @@ wfdb
 matplotlib
 pandas
 PyWavelets
-PyWavelets
