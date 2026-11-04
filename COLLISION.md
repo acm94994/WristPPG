@@ -79,6 +79,25 @@ Change vs NLMS-all, 8 subjects, mean [95% bootstrap CI]:
 Hold + tracker is one record: s9_walk 96.4 -> 58.6. Without s9_walk every method is within about 0.2 BPM
 (NLMS 19.88, hold + tracker 19.77). It helped 4 of 8 subjects. It is not a finding, only a lead on s9_walk.
 
+Correction: the table above does not test gating on its own. The gate reads tracked HR, and on s4_run
+(73% of time within 6 BPM of a line) it never fired: hold_frac is 0 for every method, because tracked HR
+in the zone averaged 147 BPM against a true 173. In 11 of the 18 records with a zone, tracked HR there is
+more than 10 BPM from the truth (census.csv, tracked_hr_zone vs true_hr_zone).
+
+ECG-gated upper bound (`--gate-hr ecg`, results/collision_oracle): the gate gets the true HR. Not a usable
+method, only a test of whether gating could work at all. Change in whole-record MAE vs NLMS-all, 8 subjects:
+| Method | HR gate | ECG gate (upper bound) |
+|---|---|---|
+| Share of time gate is active | 11% | 28% |
+| Mu cut | +0.1 [-0.6, +0.7] | +4.8 [-1.4, +14.9] |
+| Hold | +0.5 [-0.6, +1.6] | +4.7 [-1.1, +14.5] |
+| Tracker change only | -0.2 [-0.8, +0.3] | +3.0 [+0.4, +6.3] |
+| Mu cut + tracker | +0.0 [-0.8, +0.9] | +5.0 [-1.3, +15.9] |
+| Hold + tracker | -4.8 [-14.4, +0.4] | -0.2 [-19.0, +17.5] |
+
+Even with the true HR, no method improved on NLMS-all, and the tracker change alone got worse. Held
+weights took s4_run from 25.8 to 62.7 BPM. The negative conclusion stands, now on firmer ground.
+
 Why it fails: held weights go stale at once. Epsilon is about 0.55 at the tuned settings and 0.33-0.48 at
 mu = 0.01, against 0.05-0.2 in simulation. The slowly drifting coupling the method assumes is not there.
 Exploratory fixed mu = 0.01: no method beat NLMS either (18.83; mu cut 18.67, hold + tracker 19.29).
@@ -89,12 +108,16 @@ Design fix found on real data, before scoring: lines come from a slow pilot NLMS
 the filter output contains the pulse, so s1_high_resistance_bike showed 57% collision time against 1% by IMU.
 
 ## Recommendation
-Report the census and this negative result. Do not add collision gating to the main method.
+Report the census and this negative result, including the ECG-gated upper bound. Do not add collision
+gating to the main method. The report section is report/extension_section.tex.
 
 ## Run on real data
     python run_collision.py --data data --out results/collision --loso results/loso_params.csv
+    python run_collision.py --data data --out results/collision_oracle --loso results/loso_params.csv --gate-hr ecg
+    python make_report_section.py      # writes report/extension_section.tex from the result files
 
-1. `census.csv`: how much time is within 6 and 15 BPM of a cancelled line, and for how long.
+1. `census.csv`: how much time is within 6 and 15 BPM of a cancelled line, and for how long, plus mean
+   tracked and true HR inside the zone.
 2. `holdtest.csv`: epsilon against hold time. Near a collision you need epsilon * M well below A.
 3. `scores.csv`: compare methods. Judge the tracker change on whole-record MAE, not zone MAE.
 

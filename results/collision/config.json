@@ -6,5 +6,6 @@
  "L": 16,
  "mu": 0.01,
  "gate": 12,
- "passes": 2
+ "passes": 2,
+ "gate_hr": "tracked"
 }

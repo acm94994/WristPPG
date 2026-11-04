@@ -1,6 +1,7 @@
 """Collision-aware adaptation on the real Wrist PPG During Exercise records.
 
   python run_collision.py --data data --out results/collision --loso results/loso_params.csv
+  python run_collision.py --data data --out results/collision_oracle --loso results/loso_params.csv --gate-hr ecg
 
 Writes
   census.csv    how much time each record spends in a collision, and how long collisions last
@@ -8,7 +9,8 @@ Writes
   holdtest.csv  how fast held weights go stale, away from collisions
 
 ECG reaches only the census and scoring here, through src/option3_eval.py. It never enters the
-gate, the filter or the tracker.
+gate, the filter or the tracker, except with --gate-hr ecg: that gives the gate the true HR, as an
+upper bound on what gating could do. It is not a usable method.
 """
 import argparse, csv, json, os
 import numpy as np
@@ -36,7 +38,7 @@ def line_power(x, lines_bpm, fs):
     return P[sel].sum()
 
 
-def census(rec, t, true, lines):
+def census(rec, t, true, lines, hr):
     gap = window_gap(np.nan_to_num(true, nan=1e6), lines)
     z = gap < ZONE_BPM
     near = gap < 6
@@ -46,7 +48,9 @@ def census(rec, t, true, lines):
     return dict(record=rec["name"], activity=rec["activity"], minutes=len(t) * 2 / 60,
                 frac_within_15=float(z.mean()), frac_within_6=float(near.mean()), n_within_6=len(durs),
                 median_dur_s=float(np.median(durs)) if len(durs) else 0.0,
-                max_dur_s=float(durs.max()) if len(durs) else 0.0)
+                max_dur_s=float(durs.max()) if len(durs) else 0.0,
+                tracked_hr_zone=float(np.nanmean(hr[z])) if z.any() else np.nan,
+                true_hr_zone=float(np.nanmean(true[z])) if z.any() else np.nan)
 
 
 def holdtest(d, refs, e0, lines, t, gap, L, mu, cfg, holds=(2, 5, 10, 20, 40)):
@@ -80,7 +84,7 @@ def holdtest(d, refs, e0, lines, t, gap, L, mu, cfg, holds=(2, 5, 10, 20, 40)):
 
 def write(rows, path):
     if rows:
-        keys = sorted({k for r in rows for k in r}, key=lambda k: next(i for i, r in enumerate(rows) if k in r))
+        keys = list(dict.fromkeys(k for r in rows for k in r))
         with open(path, "w", newline="") as f:
             w = csv.DictWriter(f, fieldnames=keys)
             w.writeheader()
@@ -97,6 +101,8 @@ def main():
     p.add_argument("--mu", type=float, default=0.01)
     p.add_argument("--gate", type=float, default=12)
     p.add_argument("--passes", type=int, default=2)
+    p.add_argument("--gate-hr", choices=("tracked", "ecg"), default="tracked",
+                   help="ecg: gate on the true HR, an upper bound only")
     a = p.parse_args()
     os.makedirs(a.out, exist_ok=True)
     cfg = CollisionConfig(gate_bpm=a.gate)
@@ -112,17 +118,18 @@ def main():
         h0, t = track_hr(e0, fs, motion=refs)
         lines = pilot_lines(d, refs, fs, a.L, a.mu, cfg, e0)[:len(t)]
         true = ref_hr(rec["rpeaks_s"], t)
-        cen.append(census(rec, t, true, lines))
+        cen.append(census(rec, t, true, lines, h0))
         gap = window_gap(np.nan_to_num(true, nan=1e6), lines)
         zone = gap < ZONE_BPM
-        hold0 = hold_mask(h0, t, lines, len(d), fs, cfg)
+        oracle = np.nan_to_num(true, nan=1e6) if a.gate_hr == "ecg" else None
+        hold0 = hold_mask(h0 if oracle is None else oracle, t, lines, len(d), fs, cfg)
         outs = {"ANC": (e0, h0, np.zeros(len(d), bool)),
                 "aware-only": (e0, track_aware(e0, fs, refs, mask_to_windows(hold0, t, fs))[0], hold0)}
         e1 = nlms_hold(d, refs, hold0, fs, a.L, a.mu, "avg", cfg)
         outs["hold"] = (e1, track_hr(e1, fs, motion=refs)[0], hold0)
-        o = run_collision(d, refs, fs, a.L, a.mu, cfg, "avg", a.passes)
+        o = run_collision(d, refs, fs, a.L, a.mu, cfg, "avg", a.passes, true_hr=oracle)
         outs["hold+aware"] = (o["e"], o["hr"], o["hold"])
-        o2 = run_collision(d, refs, fs, a.L, a.mu, cfg, "mu", a.passes)
+        o2 = run_collision(d, refs, fs, a.L, a.mu, cfg, "mu", a.passes, true_hr=oracle)
         e2 = nlms_hold(d, refs, hold0, fs, a.L, a.mu, "mu", cfg)
         outs["mu"] = (e2, track_hr(e2, fs, motion=refs)[0], hold0)
         outs["mu+aware"] = (o2["e"], o2["hr"], o2["hold"])
@@ -137,7 +144,8 @@ def main():
             sco.append(dict(record=rec["name"], subject=rec["subject"], activity=rec["activity"], method=m, mu=a.mu,
                             mae=hr_mae(hr, t, ref), mae_zone=hr_mae(hr, t, ref, zone) if zone.any() else np.nan,
                             f1_zone=beat_f1(sel(est), sel(ref)) if zone.any() else np.nan, hold_frac=float(hold.mean())))
-        hol += [dict(record=rec["name"], activity=rec["activity"], **r) for r in holdtest(d, refs, e0, lines, t, gap, a.L, a.mu, cfg)]
+        if oracle is None:
+            hol += [dict(record=rec["name"], activity=rec["activity"], **r) for r in holdtest(d, refs, e0, lines, t, gap, a.L, a.mu, cfg)]
         print(name, f"within 15 BPM: {100 * cen[-1]['frac_within_15']:.0f}% of time", flush=True)
     write(cen, os.path.join(a.out, "census.csv"))
     write(sco, os.path.join(a.out, "scores.csv"))

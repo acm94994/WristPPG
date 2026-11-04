@@ -1,0 +1,11 @@
+{
+ "data": "data",
+ "out": "results/collision_oracle",
+ "records": "",
+ "loso": "results/loso_params.csv",
+ "L": 16,
+ "mu": 0.01,
+ "gate": 12,
+ "passes": 2,
+ "gate_hr": "ecg"
+}
