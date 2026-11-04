@@ -1,0 +1,10 @@
+{
+ "data": "data",
+ "out": "results/collision",
+ "records": "",
+ "loso": "results/loso_params.csv",
+ "L": 16,
+ "mu": 0.01,
+ "gate": 12,
+ "passes": 2
+}

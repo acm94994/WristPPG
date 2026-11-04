@@ -1,0 +1,76 @@
+change vs ANC, mean [95% bootstrap CI over 40 seeds]
+
+rmse_art (%)
+  ANC+soft     -15.744 [-17.178, -14.275]
+  WQN-res      -53.560 [-54.988, -52.001]
+  WQN-imu      -37.041 [-39.875, -34.092]
+  WQN-both     -39.987 [-42.978, -36.779]
+  freeze        +7.402 [+6.160, +8.805]
+  freeze+WQN   -38.827 [-41.892, -35.628]
+  WQN-oracle   -48.065 [-49.071, -47.073]
+
+rmse_clean (%)
+  ANC+soft     +122.590 [+111.449, +135.256]
+  WQN-res       -5.941 [-6.899, -5.006]
+  WQN-imu       +0.140 [+0.106, +0.179]
+  WQN-both      +0.483 [+0.378, +0.603]
+  freeze        -0.061 [-0.234, +0.082]
+  freeze+WQN    +0.488 [+0.269, +0.705]
+  WQN-oracle    -0.107 [-0.131, -0.082]
+
+mae
+  ANC+soft     +94.352 [+93.290, +95.419]
+  WQN-res       +0.001 [-0.015, +0.019]
+  WQN-imu       -0.005 [-0.015, +0.004]
+  WQN-both      -0.007 [-0.016, +0.000]
+  freeze        -0.005 [-0.023, +0.011]
+  freeze+WQN    -0.013 [-0.032, +0.004]
+  WQN-oracle    -0.008 [-0.016, -0.002]
+
+mae_art
+  ANC+soft     +94.059 [+92.544, +95.566]
+  WQN-res       -0.039 [-0.077, -0.011]
+  WQN-imu       -0.032 [-0.074, +0.001]
+  WQN-both      -0.039 [-0.079, -0.011]
+  freeze        -0.006 [-0.036, +0.015]
+  freeze+WQN    -0.042 [-0.083, -0.011]
+  WQN-oracle    -0.042 [-0.082, -0.014]
+
+f1_art
+  ANC+soft      -0.703 [-0.727, -0.677]
+  WQN-res       +0.031 [+0.022, +0.041]
+  WQN-imu       +0.021 [+0.013, +0.032]
+  WQN-both      +0.022 [+0.015, +0.029]
+  freeze        -0.003 [-0.009, +0.003]
+  freeze+WQN    +0.022 [+0.015, +0.029]
+  WQN-oracle    +0.028 [+0.021, +0.035]
+
+surge_gain
+  ANC+soft      -0.936 [-0.960, -0.909]
+  WQN-res       -0.234 [-0.278, -0.188]
+  WQN-imu       -0.000 [-0.000, -0.000]
+  WQN-both      -0.000 [-0.000, -0.000]
+  freeze        +0.000 [-0.000, +0.001]
+  freeze+WQN    +0.000 [-0.000, +0.002]
+  WQN-oracle    -0.000 [-0.000, -0.000]
+
+by activity, WQN-both
+  walk  rmse_art% -39.586 [-43.497, -35.361]  f1  +0.024 [+0.012, +0.037]  mae  -0.005 [-0.030, +0.017]
+  run   rmse_art% -41.383 [-46.912, -35.184]  f1  +0.022 [+0.014, +0.030]  mae  -0.015 [-0.039, +0.001]
+  bike  rmse_art% -39.544 [-45.292, -33.695]  f1  +0.019 [+0.007, +0.032]  mae  -0.002 [-0.004, -0.000]
+
+detection (fraction of events intersecting an interval)
+  WQN-res   coupled 0.981  ppg_only 0.943  imu_only 0.500  surge 0.513  intervals/rec 7.3
+  WQN-imu   coupled 1.000  ppg_only 0.000  imu_only 1.000  surge 0.000  intervals/rec 4.3
+  WQN-both  coupled 0.978  ppg_only 0.000  imu_only 0.500  surge 0.000  intervals/rec 3.6
+events: {'n_coupled': 368, 'n_ppg': 122, 'n_imu': 152, 'n_surge': 117}
+records: 120
+
+stress: nominal rate vs measured rate (the simulator keeps events at least 12 s apart)
+/home/claude/p3/analyze.py:68: RuntimeWarning: Mean of empty slice
+  line += f" {m}: mae {np.mean([r['mae'] for r in q]):.2f} f1 {np.nanmean([r['f1_art'] for r in q]):.3f} |"
+  nominal    0.0 measured 0.0/min  ANC: mae 2.35 f1 nan | WQN-both: mae 2.35 f1 nan | WQN-res: mae 2.38 f1 nan | WQN-oracle: mae 2.35 f1 nan |
+  nominal    2.0 measured 1.6/min  ANC: mae 2.35 f1 0.912 | WQN-both: mae 2.35 f1 0.937 | WQN-res: mae 2.36 f1 0.945 | WQN-oracle: mae 2.35 f1 0.941 |
+  nominal    5.0 measured 2.9/min  ANC: mae 2.46 f1 0.907 | WQN-both: mae 2.47 f1 0.925 | WQN-res: mae 2.47 f1 0.935 | WQN-oracle: mae 2.47 f1 0.934 |
+  nominal   10.0 measured 3.7/min  ANC: mae 2.45 f1 0.903 | WQN-both: mae 2.42 f1 0.919 | WQN-res: mae 2.42 f1 0.923 | WQN-oracle: mae 2.44 f1 0.932 |
+HR MAE on perfectly clean pulse: with motion down-weighting 2.07  without 0.51

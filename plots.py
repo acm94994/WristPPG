@@ -14,6 +14,7 @@ import pandas as pd
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
+from src.methods import METHODS
 
 p = argparse.ArgumentParser()
 p.add_argument("--record", default="s3_run")
@@ -31,12 +32,10 @@ def save(fig, name):
 # 1. learning curves: stored as 1 s moving averages at fs Hz, smoothed here to 2 s
 z = np.load("results/curves.npz")
 fs = int(z["fs"])
-fig, ax = plt.subplots(figsize=(3.5, 2.4))                  # one IEEE column
-for key in z.files:
-    if not (key.startswith("real|") and key.endswith("|" + a.record)):
-        continue
-    m = key.split("|")[1]
-    if m == "RAW":
+fig, ax = plt.subplots(figsize=(4.6, 2.4))
+for m in METHODS:                                           # fixed order -> fixed colours
+    key = f"real|{m}|{a.record}"
+    if m == "RAW" or key not in z.files:
         continue
     c = np.convolve(z[key], np.ones(2 * fs) / (2 * fs), mode="valid")
     ax.plot(np.arange(len(c)) / fs, c, lw=1, label=m)
@@ -44,7 +43,7 @@ ax.set_yscale("log")
 ax.set_xlabel("time (s)")
 ax.set_ylabel("e² (2 s moving avg)")
 ax.set_title(f"Learning curves, {a.record}")
-ax.legend(fontsize=6, ncol=2, frameon=False)
+ax.legend(fontsize=7, frameon=False, loc="center left", bbox_to_anchor=(1.0, 0.5))   # outside the axes
 save(fig, "fig_learning_curves")
 
 # 2. robustness
