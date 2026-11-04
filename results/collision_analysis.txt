@@ -1,0 +1,122 @@
+
+=== mae: ANC level, then change vs ANC [95% CI] ===
+collisions    ANC  2.749
+   aware-only          -0.441 [-0.492, -0.395]
+   hold                -0.142 [-0.251, +0.026]
+   hold-last+aware     -0.446 [-0.581, -0.259]
+   mu+aware            -0.509 [-0.582, -0.442]
+   hold+aware          -0.445 [-0.578, -0.253]
+   hold+aware-oracle   -0.551 [-0.622, -0.482]
+phase-locked  ANC  3.220
+   aware-only          -0.488 [-0.638, -0.244]
+   hold                -0.483 [-0.598, -0.310]
+   hold-last+aware     -0.849 [-0.993, -0.641]
+   mu+aware            -0.898 [-0.985, -0.811]
+   hold+aware          -0.817 [-1.009, -0.508]
+   hold+aware-oracle   -1.020 [-1.144, -0.911]
+near misses   ANC  2.648
+   aware-only          -0.305 [-0.341, -0.271]
+   hold                +0.040 [-0.015, +0.142]
+   hold-last+aware     -0.239 [-0.304, -0.138]
+   mu+aware            -0.281 [-0.313, -0.244]
+   hold+aware          -0.218 [-0.304, -0.075]
+   hold+aware-oracle   -0.371 [-0.402, -0.337]
+control       ANC 17.393
+   aware-only          +0.000 [+0.000, +0.000]
+   hold                +0.007 [+0.000, +0.022]
+   hold-last+aware     +0.005 [+0.000, +0.016]
+   mu+aware            +0.005 [+0.000, +0.016]
+   hold+aware          +0.007 [+0.000, +0.022]
+   hold+aware-oracle   -0.000 [-0.000, +0.000]
+
+=== mae_zone: ANC level, then change vs ANC [95% CI] ===
+collisions    ANC  3.194
+   aware-only          -2.025 [-2.206, -1.837]
+   hold                -0.865 [-1.095, -0.650]
+   hold-last+aware     -2.391 [-2.684, -2.109]
+   mu+aware            -2.401 [-2.684, -2.142]
+   hold+aware          -2.392 [-2.683, -2.115]
+   hold+aware-oracle   -2.589 [-2.888, -2.312]
+phase-locked  ANC  4.593
+   aware-only          -2.200 [-2.498, -1.888]
+   hold                -2.136 [-2.362, -1.923]
+   hold-last+aware     -3.616 [-3.958, -3.272]
+   mu+aware            -3.572 [-3.894, -3.236]
+   hold+aware          -3.514 [-3.999, -2.924]
+   hold+aware-oracle   -3.991 [-4.432, -3.547]
+near misses   ANC  1.993
+   aware-only          -1.037 [-1.137, -0.934]
+   hold                -0.057 [-0.067, -0.047]
+   hold-last+aware     -1.000 [-1.110, -0.878]
+   mu+aware            -1.045 [-1.147, -0.939]
+   hold+aware          -0.992 [-1.114, -0.853]
+   hold+aware-oracle   -1.338 [-1.455, -1.215]
+
+=== rmse_zone: ANC level, then change vs ANC [95% CI] ===
+collisions    ANC  0.260
+   aware-only          +0.000 [+0.000, +0.000]
+   hold                -0.113 [-0.124, -0.100]
+   hold-last+aware     -0.107 [-0.121, -0.092]
+   mu+aware            -0.111 [-0.120, -0.101]
+   hold+aware          -0.118 [-0.133, -0.101]
+   hold+aware-oracle   -0.123 [-0.136, -0.108]
+phase-locked  ANC  0.338
+   aware-only          +0.000 [+0.000, +0.000]
+   hold                -0.140 [-0.154, -0.125]
+   hold-last+aware     -0.174 [-0.189, -0.158]
+   mu+aware            -0.156 [-0.166, -0.146]
+   hold+aware          -0.185 [-0.201, -0.167]
+   hold+aware-oracle   -0.196 [-0.211, -0.180]
+near misses   ANC  0.134
+   aware-only          +0.000 [+0.000, +0.000]
+   hold                +0.010 [+0.005, +0.016]
+   hold-last+aware     +0.030 [+0.024, +0.037]
+   mu+aware            +0.010 [+0.006, +0.014]
+   hold+aware          +0.012 [+0.006, +0.019]
+   hold+aware-oracle   +0.001 [-0.005, +0.007]
+
+=== f1_zone: ANC level, then change vs ANC [95% CI] ===
+collisions    ANC  0.955
+   aware-only          +0.000 [-0.000, +0.001]
+   hold                +0.029 [+0.020, +0.038]
+   hold-last+aware     +0.030 [+0.019, +0.041]
+   mu+aware            +0.033 [+0.024, +0.042]
+   hold+aware          +0.029 [+0.019, +0.040]
+   hold+aware-oracle   +0.031 [+0.021, +0.041]
+phase-locked  ANC  0.890
+   aware-only          +0.000 [-0.001, +0.001]
+   hold                +0.090 [+0.079, +0.102]
+   hold-last+aware     +0.098 [+0.084, +0.112]
+   mu+aware            +0.096 [+0.085, +0.109]
+   hold+aware          +0.098 [+0.083, +0.112]
+   hold+aware-oracle   +0.102 [+0.089, +0.116]
+near misses   ANC  0.998
+   aware-only          -0.000 [-0.000, +0.000]
+   hold                -0.004 [-0.006, -0.002]
+   hold-last+aware     -0.004 [-0.006, -0.002]
+   mu+aware            -0.001 [-0.003, -0.001]
+   hold+aware          -0.005 [-0.008, -0.002]
+   hold+aware-oracle   -0.005 [-0.007, -0.003]
+
+=== by activity, hold+aware vs ANC, mae_zone in collisions and phase-locked ===
+walk  ANC  2.58  hold+aware -1.677 [-2.224, -0.989]  aware-only -1.638 [-1.974, -1.318]
+run   ANC  5.19  hold+aware -4.085 [-4.385, -3.759]  aware-only -2.841 [-3.108, -2.595]
+bike  ANC  3.48  hold+aware -2.761 [-3.184, -2.340]  aware-only -1.807 [-2.160, -1.415]
+
+=== by scenario, mae (whole record) and mae_zone ===
+crossing  ANC: 2.44/2.73 aware-only: 2.22/0.97 hold: 2.47/2.44 hold+aware: 2.30/0.90  hold% 9.0
+dwell20   ANC: 2.76/3.36 aware-only: 2.30/1.17 hold: 2.63/2.39 hold+aware: 2.31/0.80  hold% 17.2
+dwell40   ANC: 3.04/3.49 aware-only: 2.41/1.37 hold: 2.72/2.15 hold+aware: 2.31/0.70  hold% 24.8
+lock20    ANC: 2.85/3.81 aware-only: 2.37/1.55 hold: 2.58/2.18 hold+aware: 2.30/0.78  hold% 17.2
+lock40    ANC: 3.59/5.37 aware-only: 3.09/3.23 hold: 2.89/2.74 hold+aware: 2.50/1.38  hold% 24.2
+near+8    ANC: 2.78/2.76 aware-only: 2.33/1.19 hold: 2.83/2.69 hold+aware: 2.44/1.28  hold% 21.6
+near-8    ANC: 2.93/2.73 aware-only: 2.48/1.19 hold: 2.99/2.66 hold+aware: 2.59/1.26  hold% 21.9
+near+12   ANC: 2.34/1.22 aware-only: 2.19/0.72 hold: 2.39/1.19 hold+aware: 2.29/0.79  hold% 15.3
+near-12   ANC: 2.54/1.27 aware-only: 2.37/0.71 hold: 2.55/1.21 hold+aware: 2.40/0.68  hold% 14.8
+/home/claude/p3/analyze_collision.py:30: RuntimeWarning: Mean of empty slice
+  return np.nanmean([r[metric] for r in rows if r["method"] == m and r["scen"] in scens and r["act"] in acts])
+control   ANC: 17.39/nan aware-only: 17.39/nan hold: 17.40/nan hold+aware: 17.40/nan  hold% 0.1
+
+worst records, hold+aware minus ANC whole-record MAE
+[(18.7, 'lock40', 'walk', 2003), (9.9, 'near+12', 'walk', 2003), (9.3, 'near+8', 'walk', 2003), (8.6, 'near-8', 'walk', 2003), (8.5, 'dwell40', 'walk', 2003), (8.4, 'crossing', 'walk', 2003)] share worse by >1 BPM: 0.007 better by >1: 0.132
+records 1200

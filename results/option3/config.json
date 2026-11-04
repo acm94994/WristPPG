@@ -1,0 +1,19 @@
+{
+ "L": 16,
+ "mu": 0.01,
+ "gate": {
+  "env_s": 1.0,
+  "base_s": 30.0,
+  "k_imu": 6.0,
+  "k_res": 5.0,
+  "res_smooth_s": 0.5,
+  "join_s": 0.5,
+  "pad_s": 0.5,
+  "max_art_s": 6.0,
+  "ref_s": 16.0,
+  "ref_span_s": 30.0,
+  "ref_hop_s": 2.0,
+  "q_min": 0.35,
+  "collision_bpm": 6.0
+ }
+}

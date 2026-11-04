@@ -1,0 +1,8 @@
+leak 0.0 collision  ANC 2.38/3.37 aware-only 1.69/1.26 hold 2.26/2.68 mu+aware 1.76/0.75 hold+aware 1.95/0.74
+leak 0.0 near miss  ANC 2.26/2.48 aware-only 1.77/1.00 hold 2.33/2.45 mu+aware 2.00/1.03 hold+aware 2.11/1.07
+leak 0.5 collision  ANC 3.95/8.61 aware-only 2.77/5.79 hold 4.09/8.28 mu+aware 2.92/4.22 hold+aware 2.70/3.61
+leak 0.5 near miss  ANC 2.47/3.62 aware-only 1.69/2.10 hold 2.63/3.58 mu+aware 2.43/2.72 hold+aware 2.49/3.01
+leak 1.0 collision  ANC 11.10/10.24 aware-only 11.01/7.93 hold 11.02/10.09 mu+aware 11.29/6.76 hold+aware 11.23/6.32
+leak 1.0 near miss  ANC 10.16/6.92 aware-only 11.01/6.18 hold 10.37/7.15 mu+aware 11.92/6.27 hold+aware 11.64/6.20
+leak 2.0 collision  ANC 21.29/12.11 aware-only 22.79/10.13 hold 21.32/11.86 mu+aware 22.24/8.99 hold+aware 21.87/8.33
+leak 2.0 near miss  ANC 20.87/11.51 aware-only 22.39/9.74 hold 20.98/11.53 mu+aware 22.28/9.40 hold+aware 22.21/9.43

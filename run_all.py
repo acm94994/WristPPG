@@ -29,9 +29,10 @@ CURVE_FS = 4
 
 
 def _decimate(curve, fs):
+    """1 s moving average, sampled at exactly CURVE_FS Hz (fs need not be a multiple of it, e.g. 35 Hz)."""
     k = max(1, int(fs))
     sm = np.convolve(curve, np.ones(k) / k, mode="valid")
-    return sm[::max(1, int(fs // CURVE_FS))].astype(np.float32)
+    return sm[np.arange(0, len(sm), fs / CURVE_FS).astype(int)].astype(np.float32)
 
 
 def build_jobs(sel, names, records):

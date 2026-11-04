@@ -1,0 +1,6 @@
+drift 0.00 ANC         mae_zone   3.63 rmse_zone 0.147
+drift 0.00 hold+aware  mae_zone   1.36 rmse_zone 0.071
+drift 0.25 ANC         mae_zone   3.68 rmse_zone 0.172
+drift 0.25 hold+aware  mae_zone   1.35 rmse_zone 0.165
+drift 0.50 ANC         mae_zone   4.18 rmse_zone 0.223
+drift 0.50 hold+aware  mae_zone   1.69 rmse_zone 0.295

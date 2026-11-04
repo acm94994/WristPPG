@@ -1,0 +1,101 @@
+=== COLLISION: census ===
+record                        mu  %<15   %<6  n<6  med s  max s  ANC MAE
+s1_high_resistance_bike      0.5     8     1    2      3      4      4.3
+s1_low_resistance_bike       0.5    17     5    8      3      6     12.4
+s1_walk                      0.5    42     2    5      2      4      4.4
+s2_high_resistance_bike      0.5     0     0    0      0      0      6.1
+s2_low_resistance_bike       0.5     4     1    2      2      2      2.8
+s2_walk                      0.5    79    67   22      8     46     23.5
+s3_high_resistance_bike      0.5    34    10    8      2     12      8.8
+s3_low_resistance_bike       0.5    66    29   17      4     10      8.4
+s3_run                       0.5    84     4    2      6      8      4.6
+s3_walk                      0.5    44     3    2      4      4     28.7
+s4_run                       0.5    81    73   10     15     58     25.8
+s5_low_resistance_bike      0.05    18     0    0      0      0     72.4
+s5_run                      0.05    30     7    3      8      8     23.7
+s6_low_resistance_bike       0.5    71    34   19      4     12     18.3
+s6_run                       0.5    22     5    6      2      4     25.4
+s6_walk                      0.5    95    52   22      6     18     24.5
+s8_run                      0.01     4     0    0      0      0     29.0
+s8_walk                     0.01     3     1    1      4      4     34.9
+s9_walk                      0.5   100    75   13     10     36     96.4
+mean time within 6 BPM 19%, within 15 BPM 42%
+Spearman, time within 6 BPM vs NLMS-all MAE, 19 records: rho=0.14 p=0.571
+  walk                   n=6 within 6 BPM 33%  MAE 35.4
+  run                    n=5 within 6 BPM 18%  MAE 21.7
+  low_resistance_bike    n=5 within 6 BPM 14%  MAE 22.9
+  high_resistance_bike   n=3 within 6 BPM 4%  MAE 6.4
+
+=== COLLISION: methods, record mean level ===
+method           MAE  zone MAE  zone F1  hold %
+ANC            23.90     26.08    0.332     0.0
+aware-only     23.73     25.89    0.333    11.4
+hold           24.13     26.55    0.340    11.4
+mu             23.86     26.24    0.342    11.4
+hold+aware     21.82     23.68    0.345    12.3
+mu+aware       23.80     25.78    0.347    11.0
+
+change vs ANC, by subject
+mae
+  aware-only    -0.249 [-0.824, +0.317]  better in 5/8  wilcoxon p=0.312
+  hold          +0.457 [-0.545, +1.615]  better in 3/8  wilcoxon p=0.578
+  mu            +0.088 [-0.568, +0.763]  better in 3/8  wilcoxon p=0.812
+  hold+aware    -4.835 [-14.489, +0.428]  better in 4/8  wilcoxon p=0.578
+  mu+aware      +0.044 [-0.780, +0.880]  better in 3/8  wilcoxon p=0.938
+mae_zone
+  aware-only    -0.480 [-1.625, +0.531]  better in 3/8  wilcoxon p=0.562
+  hold          +0.575 [-0.628, +1.861]  better in 3/8  wilcoxon p=0.578
+  mu            +0.206 [-0.488, +0.887]  better in 3/8  wilcoxon p=0.578
+  hold+aware    -5.183 [-14.796, +0.554]  better in 4/8  wilcoxon p=0.469
+  mu+aware      -0.270 [-1.433, +0.893]  better in 3/8  wilcoxon p=0.812
+f1_zone
+  aware-only    +0.001 [+0.000, +0.001]  better in 1/8  wilcoxon p=nan
+  hold          -0.001 [-0.020, +0.017]  better in 4/8  wilcoxon p=1.000
+  mu            +0.005 [-0.014, +0.022]  better in 3/8  wilcoxon p=0.812
+  hold+aware    +0.008 [-0.012, +0.024]  better in 2/8  wilcoxon p=0.375
+  mu+aware      +0.009 [-0.007, +0.024]  better in 2/8  wilcoxon p=0.375
+
+records changed by more than 2 BPM, whole-record MAE
+  aware-only   better 2, worse 1; largest worse s3_low_resistance_bike +4.1; largest better s2_walk -5.0
+  hold         better 3, worse 5; largest worse s9_walk +3.8; largest better s2_walk -4.9
+  mu           better 3, worse 2; largest worse s3_low_resistance_bike +3.1; largest better s1_low_resistance_bike -4.1
+  hold+aware   better 3, worse 2; largest worse s3_low_resistance_bike +3.9; largest better s9_walk -37.7
+  mu+aware     better 3, worse 2; largest worse s3_low_resistance_bike +5.6; largest better s2_walk -6.5
+
+=== held weights, away from collisions ===
+  hold  2 s  records 13  leftover vs adaptive  17.42  epsilon 0.55
+  hold  5 s  records 13  leftover vs adaptive  40.63  epsilon 0.57
+  hold 10 s  records 13  leftover vs adaptive  14.60  epsilon 0.53
+  hold 20 s  records 13  leftover vs adaptive  59.34  epsilon 0.73
+  hold 40 s  records 13  leftover vs adaptive  41.71  epsilon 0.56
+
+=== OPTION 3 ===
+events 71 over 111 min = 0.64/min; no_reference 39%; anc_gain>1 in 15%
+  ANC         MAE  23.90  event F1 0.359
+  WQN-res     MAE  26.73  event F1 0.332
+  WQN-imu     MAE  26.62  event F1 0.352
+  WQN-both    MAE  25.16  event F1 0.370
+  freeze      MAE  23.95  event F1 0.332
+  freeze+WQN  MAE  26.71  event F1 0.340
+change vs ANC by subject, beat F1 near events
+  WQN-res      -0.029 [-0.061, -0.002]  better in 4/7  wilcoxon p=0.188
+  WQN-imu      -0.010 [-0.046, +0.026]  better in 3/7  wilcoxon p=0.812
+  WQN-both     +0.006 [-0.018, +0.038]  better in 3/7  wilcoxon p=1.000
+  freeze+WQN   -0.030 [-0.077, +0.016]  better in 5/7  wilcoxon p=0.375
+change vs ANC by subject, HR MAE
+  WQN-res      +2.308 [+0.143, +5.432]  better in 1/8  wilcoxon p=0.023
+  WQN-imu      +2.153 [-0.021, +5.396]  better in 3/8  wilcoxon p=0.812
+  WQN-both     +0.993 [-0.178, +3.183]  better in 5/8  wilcoxon p=0.438
+  freeze+WQN   +2.365 [+0.045, +5.344]  better in 3/8  wilcoxon p=0.375
+injections (rmse vs same record un-injected)
+  ANC         injected 0.666  elsewhere 0.115
+  ANC+soft    injected 0.521  elsewhere 0.318
+  WQN-res     injected 0.620  elsewhere 0.140
+  WQN-imu     injected 0.595  elsewhere 0.130
+  WQN-both    injected 0.615  elsewhere 0.127
+  freeze      injected 1.567  elsewhere 0.427
+  freeze+WQN  injected 1.069  elsewhere 0.342
+  WQN-imu     injected error % by subject -12.225 [-17.439, -7.209]  better in 8/8  wilcoxon p=0.008
+  WQN-both    injected error % by subject  -9.175 [-14.071, -4.748]  better in 8/8  wilcoxon p=0.008
+  freeze+WQN  injected error % by subject +43.337 [+17.565, +68.018]  better in 1/8  wilcoxon p=0.023
+  detected 55 of 127 injected transients

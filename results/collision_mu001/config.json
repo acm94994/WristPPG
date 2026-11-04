@@ -1,0 +1,10 @@
+{
+ "data": "data",
+ "out": "results/collision_mu001",
+ "records": "",
+ "loso": "",
+ "L": 16,
+ "mu": 0.01,
+ "gate": 12,
+ "passes": 2
+}
