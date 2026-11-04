@@ -79,3 +79,9 @@ Only A changes status to `decided`. Anyone can add a row.
 - Collision-aware adaptation (HR near a cancelled motion line): real data fails the pre-set rule. No method beat NLMS-all across subjects. See COLLISION.md.
 - Gate lines come from a pilot NLMS at mu = 0.01, because a fast filter also tracks the pulse. Fixed before scoring.
 - Gate settings were locked on synthetic development seeds. Real data used held-out NLMS-all settings from results/loso_params.csv.
+
+## Post-submission extensions (Nov 2026)
+- Option 3 (IMU-gated WQN on the NLMS residual): real data fails the pre-set rule. Injected-transient error -9.2%, target -25%. See OPTION3.md.
+- Collision-aware adaptation (HR near a cancelled motion line): real data fails the pre-set rule. No method beat NLMS-all across subjects. See COLLISION.md.
+- Gate lines come from a pilot NLMS at mu = 0.01, because a fast filter also tracks the pulse. Fixed before scoring.
+- Gate settings were locked on synthetic development seeds. Real data used held-out NLMS-all settings from results/loso_params.csv.
