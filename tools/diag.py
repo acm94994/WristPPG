@@ -1,6 +1,6 @@
 """Diagnose HR errors on one record. Saves results/diag_<record>.png and prints a summary.
 
-  python diag.py data/s3_walk
+  python -m tools.diag data/s3_walk
 
 Plot: spectrogram of raw PPG, NLMS-1 output and NLMS-all output, with
   white  = ECG HR (ground truth)
@@ -21,7 +21,7 @@ from src.preprocess import preprocess, forearm_axis
 from src.filters import nlms
 from src.hr import track_hr
 from src.score import ecg_hr_at, window_spectra, peak_freq
-from demo import synthetic
+from tools.demo import synthetic
 
 rec = load_record(sys.argv[1]) if len(sys.argv) > 1 else synthetic()
 ax = forearm_axis(rec["acc"])

@@ -1,19 +1,19 @@
 """Collision experiment on synthetic records.
-   python run_collision_sim.py dev    grid on dev seeds, all scenarios pooled
-   python run_collision_sim.py test   locked settings on untouched test seeds
-   python run_collision_sim.py leak   sweep of uncancellable motion, on further held-out seeds
-   python run_collision_sim.py drift  sensitivity to coupling drift, on the test seeds
+   python -m experiments.run_collision_sim dev    grid on dev seeds, all scenarios pooled
+   python -m experiments.run_collision_sim test   locked settings on untouched test seeds
+   python -m experiments.run_collision_sim leak   sweep of uncancellable motion, on further held-out seeds
+   python -m experiments.run_collision_sim drift  sensitivity to coupling drift, on the test seeds
 """
 import csv, json, sys
 from multiprocessing import Pool
 import numpy as np
-from run_sim import fs, truth
+from experiments.run_wqn_sim import fs, truth
 from sim.collision_sim import make_collision
 from src.collision import (CollisionConfig, cancelled_lines, hold_mask, mask_to_windows, nlms_hold,
                            run_collision, track_aware)
 from src.filters import nlms
 from src.hr import track_hr
-from src.option3_eval import beat_f1, beats, hr_mae, match_lag, ref_hr
+from src.extension_score import beat_f1, beats, hr_mae, match_lag, ref_hr
 from src.preprocess import preprocess
 
 SCEN = {"crossing": dict(dwell=0), "dwell20": dict(dwell=20), "dwell40": dict(dwell=40),

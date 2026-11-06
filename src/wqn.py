@@ -1,4 +1,4 @@
-"""Wavelet quantile normalisation on an undecimated wavelet transform (Option 3).
+"""Wavelet quantile normalisation on an undecimated wavelet transform (IMU-gated WQN).
 
 Follows Dora, Jaffard & Holcman: for each scale j,
     T_j(x)  = F_ref^-1( F_art(x) )                 transport of coefficient amplitudes

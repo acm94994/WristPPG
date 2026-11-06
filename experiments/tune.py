@@ -1,7 +1,7 @@
 """Leave-one-subject-out tuning (DECISIONS E4, E9, E10).
 
-    python tune.py                          # all available methods
-    python tune.py --methods RLS-all --force
+    python -m experiments.tune                          # all available methods
+    python -m experiments.tune --methods RLS-all --force
 
 1. Grid: every config of every method on every record, scored once and cached in
    results/grid/<method>.csv.gz (a filter's output does not depend on which subject is held out).

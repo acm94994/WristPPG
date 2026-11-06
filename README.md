@@ -1,10 +1,10 @@
 # Multi-reference adaptive motion-artifact cancellation for wrist PPG
 
-ED5017 Digital Signal Processing research project. Wrist PPG is cleaned with adaptive filters that use the
-accelerometer and gyroscope as motion references, and heart rate is tracked from the cleaned signal. The
-proposed method, coherence-weighted NLMS (CW-NLMS), scales each IMU reference by its coherence with the PPG.
-It is compared with LMS, NLMS and RLS baselines on the *Wrist PPG During Exercise* database
-(19 records, 8 subjects), with all settings chosen by leave-one-subject-out validation.
+Wrist PPG is cleaned with adaptive filters that use the accelerometer and gyroscope as motion references,
+and heart rate is tracked from the cleaned signal. The proposed method, coherence-weighted NLMS (CW-NLMS),
+scales each IMU reference by its coherence with the PPG. It is compared with LMS, NLMS and RLS baselines on
+the *Wrist PPG During Exercise* database (19 records, 8 subjects), with all settings chosen by
+leave-one-subject-out validation. Results and discussion are in the accompanying report.
 
 ## Setup
 Python 3.11.
@@ -15,58 +15,64 @@ Download *Wrist PPG During Exercise* into `data/` (not committed):
 ```
 wget -r -N -c -np -nH --cut-dirs=3 -P data https://physionet.org/files/wrist/1.0.0/
 ```
-Check it works: `python demo.py data/s3_run` (or `python demo.py` for a synthetic test).
+Run every command below from the repository root. Check the setup with `python -m tools.demo data/s3_run`
+(or `python -m tools.demo` for a synthetic test that needs no data).
 
 ## Layout
 | Path | Contents |
 |---|---|
 | `src/` | Library: loading, preprocessing, filters, coherence weights, HR tracker, scoring, extensions |
 | `sim/` | Synthetic and semi-synthetic record generators |
-| `tests/` | Unit tests: `python -m tests.test_filters` (cancellers, coherence, cost) and `python -m tests.test_option3` (extensions) |
-| `results/` | Committed outputs of every script below, so tables and figures can be checked without rerunning |
+| `experiments/` | Runs: tuning, held-out evaluation, robustness, and the two extensions |
+| `analysis/` | Tables and paired statistics from the stored runs |
+| `figures/` | Figure scripts |
+| `tools/` | Quick checks on a single record: `demo`, `diag` |
+| `tests/` | `python -m tests.test_filters` (cancellers, coherence, cost), `python -m tests.test_extensions` (extensions) |
+| `results/` | Committed outputs of every script, so tables and figures can be checked without rerunning |
 | `DECISIONS.md` | Every setting that affects results, with its reason |
-| `COLLISION.md`, `OPTION3.md` | Design and results of the two extensions |
+| `COLLISION.md`, `WQN.md` | Design of the two extensions |
 
 ## Reproducing the main results
 ```
-python tune.py          # LOSO grid search  -> results/grid/, results/loso_params.csv
-python run_all.py       # held-out runs     -> results/main_*.csv*, synth_records.csv, curves.npz
-python robustness.py    # robustness tests  -> results/robustness.csv
-python tables.py        # tables T1-T9      -> results/tables/
-python plots.py         # residual-power and robustness figures -> results/fig_*.png/.pdf
-python fig1_overlap.py  # report Fig. 1, motion/pulse overlap on s3_run -> results/fig1_overlap.png/.pdf
-python diag.py data/s3_walk   # spectrogram diagnostics for one record
+python -m experiments.tune         # LOSO grid search  -> results/grid/, results/loso_params.csv
+python -m experiments.run_all      # held-out runs     -> results/main_*.csv*, synth_records.csv, curves.npz
+python -m experiments.robustness   # robustness tests  -> results/robustness.csv
+python -m analysis.tables          # tables T1-T9      -> results/tables/
+python -m figures.plots            # residual-power and robustness figures -> results/fig_*.png/.pdf
+python -m figures.fig1_overlap     # motion/pulse overlap on s3_run        -> results/fig1_overlap.png/.pdf
+python -m tools.diag data/s3_walk  # spectrogram diagnostics for one record
 ```
 Each step only reads what the previous ones wrote, so any step can be rerun on its own.
-`tune.py` and `run_all.py` take `--methods` to (re)run a subset.
+`experiments.tune` and `experiments.run_all` take `--methods` to (re)run a subset.
 
 ## Extensions: heart rate near the cadence
-Two extensions, each with a decision rule fixed before scoring. Neither met its rule; see COLLISION.md
-and OPTION3.md. Settings are locked on synthetic data first, then applied once to the real records.
+Two extensions, each with a decision rule fixed before scoring; see COLLISION.md and WQN.md. Settings are
+locked on synthetic data first, then applied once to the real records.
 
-IMU-gated WQN for transient jerks (OPTION3.md):
+IMU-gated WQN for transient jerks (WQN.md):
 ```
-python run_sim.py dev         # grid on synthetic dev seeds        -> results/dev.csv
-python run_sim.py test        # locked settings, held-out seeds    -> results/test.csv
-python analyze.py             # paired statistics + stress test    -> printed (saved as results/analysis.txt)
-python make_figure.py         # verification figure                -> results/option3_simulation.png
-python run_option3.py --data data --out results/option3 --loso results/loso_params.csv --inject
+python -m experiments.run_wqn_sim dev   # grid on synthetic dev seeds        -> results/dev.csv
+python -m experiments.run_wqn_sim test  # locked settings, held-out seeds    -> results/test.csv
+python -m analysis.analyze_wqn          # paired statistics + stress test    -> printed (saved as results/analysis.txt)
+python -m figures.wqn_figure            # verification figure                -> results/wqn_simulation.png
+python -m experiments.run_wqn --data data --out results/wqn --loso results/loso_params.csv --inject
 ```
 Collision-aware adaptation (COLLISION.md):
 ```
-python run_collision_sim.py dev     # grid on synthetic dev seeds        -> results/collision_dev.csv
-python run_collision_sim.py test    # locked settings, held-out seeds    -> results/collision_test.csv
-python run_collision_sim.py leak    # uncancellable-motion sweep -> results/collision_leak*.csv (log: collision_leak.log)
-python run_collision_sim.py drift   # coupling-drift sensitivity -> printed (saved as results/collision_drift.log)
-python analyze_collision.py         # -> printed (saved as results/collision_analysis.txt)
-python make_collision_figure.py     # -> results/collision_simulation.png
-python run_collision.py --data data --out results/collision --loso results/loso_params.csv
-python run_collision.py --data data --out results/collision_oracle --loso results/loso_params.csv --gate-hr ecg
+python -m experiments.run_collision_sim dev    # grid on synthetic dev seeds     -> results/collision_dev.csv
+python -m experiments.run_collision_sim test   # locked settings, held-out seeds -> results/collision_test.csv
+python -m experiments.run_collision_sim leak   # uncancellable-motion sweep      -> results/collision_leak*.csv (log: collision_leak.log)
+python -m experiments.run_collision_sim drift  # coupling-drift sensitivity      -> printed (saved as results/collision_drift.log)
+python -m analysis.analyze_collision           # -> printed (saved as results/collision_analysis.txt)
+python -m figures.collision_figure             # -> results/collision_simulation.png
+python -m experiments.run_collision --data data --out results/collision --loso results/loso_params.csv
+python -m experiments.run_collision --data data --out results/collision_oracle --loso results/loso_params.csv --gate-hr ecg
 ```
 After each `dev` run the chosen settings were written by hand to `results/locked.json` and
 `results/collision_locked.json`, before the `test` run and before any real record was scored.
 `--gate-hr ecg` is an upper bound that gives the gate the true HR; it is not a usable method.
-The real-data runs need `results/loso_params.csv` from `tune.py`. `python analyze_real.py` summarises them.
+The real-data runs need `results/loso_params.csv` from `experiments.tune`. `python -m analysis.analyze_real`
+summarises them.
 
 ## Main functions
 | Function | File | Returns |
@@ -89,7 +95,7 @@ The real-data runs need `results/loso_params.csv` from `tune.py`. `python analyz
 
 ## Ground truth
 The ECG R peaks (`rpeaks_s`) are used only for scoring, in `src/score.py` and the extension scorers. They
-never reach the filters, the coherence weights or `track_hr`; `tests/test_option3.py` checks this for the
+never reach the filters, the coherence weights or `track_hr`; `tests/test_extensions.py` checks this for the
 extensions. The one exception is the labelled upper bound `--gate-hr ecg`.
 
 ## License

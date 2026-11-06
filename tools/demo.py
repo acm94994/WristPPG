@@ -1,7 +1,7 @@
 """Smoke test: raw PPG vs NLMS-1 vs NLMS-all on one record (or synthetic data if none given).
 
-  python demo.py data/s3_run      # real record
-  python demo.py                  # synthetic sanity test, no data needed
+  python -m tools.demo data/s3_run      # real record
+  python -m tools.demo                  # synthetic sanity test, no data needed
 """
 import sys
 import numpy as np

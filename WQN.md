@@ -1,4 +1,4 @@
-# Option 3: IMU-gated WQN on the ANC residual
+# IMU-gated WQN on the ANC residual
 
 Target: short jerks that survive the canceller. It is not meant to solve cadence = HR.
 
@@ -13,16 +13,16 @@ Target: short jerks that survive the canceller. It is not meant to solve cadence
 | Jerk gate | `src/gate.py` | Raw acc + gyro, 1 s RMS so footstrikes average out, 30 s running median/MAD, z > k_imu |
 | Residual check | `src/gate.py` | Hilbert envelope of e[n], z > k_res, kept only if an IMU flag is within 0.5 s |
 | Reference | `src/gate.py` | 16 s of e[n] within 30 s, no flags, no cadence = HR, power concentrated near HR and 2HR |
-| Fallback | `src/option3.py` | No valid reference: leave that interval untouched and log it |
+| Fallback | `src/wqn_pipeline.py` | No valid reference: leave that interval untouched and log it |
 | Correction | `src/wqn.py` | sym5 SWT level 6, per-scale quantile transport, magnitude never grows, tapered edges |
-| Scoring | `src/option3_eval.py` | The only new file that touches ECG |
+| Scoring | `src/extension_score.py` | The only new file that touches ECG |
 
 ## Run on real data
 From the repo root:
 
-    python -m tests.test_option3
-    python run_option3.py --data data --out results/option3 --loso results/loso_params.csv --inject
-    python run_option3.py --data data --out results/option3 --loso results/loso_params.csv --grid
+    python -m tests.test_extensions
+    python -m experiments.run_wqn --data data --out results/wqn --loso results/loso_params.csv --inject
+    python -m experiments.run_wqn --data data --out results/wqn --loso results/loso_params.csv --grid
 
 Outputs: `scores.csv` (HR, beats vs ECG), `events.csv` (each interval, reference, status, anc_gain),
 `injected.csv` (known-truth error), `loso_picks.csv` (subject-independent k_imu, k_res).
@@ -38,7 +38,7 @@ Outputs: `scores.csv` (HR, beats vs ECG), `events.csv` (each interval, reference
 6. Apply the decision rule below.
 
 ## Decision rule (fixed before seeing real data)
-Keep Option 3 if all hold:
+Keep the method if all hold:
 - injected-transient error falls by at least 25%, with a subject-level 95% CI below 0
 - error outside injections rises by less than 5%
 - beat F1 near events rises, with a subject-level CI above 0

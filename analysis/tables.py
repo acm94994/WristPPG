@@ -1,6 +1,6 @@
 """All report tables, from the files run_all.py and robustness.py wrote. No recomputation.
 
-    python tables.py        -> results/tables/T*.csv and results/tables/tables.md
+    python -m analysis.tables        -> results/tables/T*.csv and results/tables/tables.md
 
 T1 MAE per activity (both splits)
 T2 MAE per held-out subject              T7 failure cases (E7)

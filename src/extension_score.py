@@ -1,4 +1,4 @@
-"""Scoring for Option 3. ECG / ground truth is used HERE only, never in gate.py, wqn.py or option3.py."""
+"""Scoring for the extensions (IMU-gated WQN and collision-aware adaptation). ECG / ground truth is used HERE only, never in gate.py, wqn.py or wqn_pipeline.py."""
 import numpy as np
 from scipy.signal import find_peaks
 

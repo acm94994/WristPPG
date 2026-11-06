@@ -4,12 +4,12 @@ import numpy as np
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-from run_sim import fs, truth
+from experiments.run_wqn_sim import fs, truth
 from sim.semisynth import make_record
 from src.filters import nlms
 from src.gate import GateConfig
 from src.hr import track_hr
-from src.option3 import clean, jerk_z
+from src.wqn_pipeline import clean, jerk_z
 from src.preprocess import preprocess
 
 INK, MUTED, GRID, SURF = "#0b0b0b", "#52514e", "#e6e5e0", "#fcfcfb"
@@ -95,6 +95,6 @@ bx.grid(axis="x", color=GRID, lw=.8)
 bx.set_axisbelow(True)
 for sp in ("top", "right", "left"):
     bx.spines[sp].set_visible(False)
-fig.savefig("results/option3_simulation.png", dpi=200, bbox_inches="tight", facecolor=SURF)
+fig.savefig("results/wqn_simulation.png", dpi=200, bbox_inches="tight", facecolor=SURF)
 for x in stats:
     print(f"{x[3]:30s} {x[0]:+.1f} [{x[1]:+.1f}, {x[2]:+.1f}]")

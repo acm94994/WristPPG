@@ -2,7 +2,7 @@
 import csv, json
 from multiprocessing import Pool
 import numpy as np
-from run_sim import evaluate
+from experiments.run_wqn_sim import evaluate
 
 rows = list(csv.DictReader(open("results/test.csv")))
 for r in rows:

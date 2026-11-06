@@ -75,9 +75,9 @@ if os.path.exists("results/collision/holdtest.csv"):
         q = [r for r in h if int(num(r["hold_s"])) == s]
         print(f"  hold {s:2d} s  records {len(q):2d}  leftover vs adaptive {np.median([num(r['left_vs_adaptive']) for r in q]):6.2f}  epsilon {np.median([num(r['epsilon']) for r in q]):.2f}")
 
-print("\n=== OPTION 3 ===")
-o = rd("results/option3/scores.csv")
-ev = rd("results/option3/events.csv")
+print("\n=== IMU-gated WQN ===")
+o = rd("results/wqn/scores.csv")
+ev = rd("results/wqn/events.csv")
 dur = sum(num(r["minutes"]) for r in cen)
 print(f"events {len(ev)} over {dur:.0f} min = {len(ev)/dur:.2f}/min; no_reference {np.mean([r['status']=='no_reference' for r in ev])*100:.0f}%; anc_gain>1 in {np.mean([num(r.get('anc_gain')) > 1 for r in ev if r.get('anc_gain')])*100:.0f}%")
 for x in ("ANC", "WQN-res", "WQN-imu", "WQN-both", "freeze", "freeze+WQN"):
@@ -89,7 +89,7 @@ for x in ("WQN-res", "WQN-imu", "WQN-both", "freeze+WQN"):
 print("change vs ANC by subject, HR MAE")
 for x in ("WQN-res", "WQN-imu", "WQN-both", "freeze+WQN"):
     print(f"  {x:11s} {line(by_subject(o, x, 'mae'))}")
-j = rd("results/option3/injected.csv")
+j = rd("results/wqn/injected.csv")
 print("injections (rmse vs same record un-injected)")
 for x in ("ANC", "ANC+soft", "WQN-res", "WQN-imu", "WQN-both", "freeze", "freeze+WQN"):
     q = [r for r in j if r["method"] == x]

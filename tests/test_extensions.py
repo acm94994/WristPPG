@@ -1,8 +1,8 @@
-"""Run: python -m tests.test_option3  (from the repo root)."""
+"""Run: python -m tests.test_extensions  (from the repo root)."""
 import numpy as np
 from sim.semisynth import make_record
 from src.gate import GateConfig, jerk_envelope, robust_z, find_artifacts
-from src.option3 import run_option3
+from src.wqn_pipeline import run_wqn
 from src.preprocess import _bandpass, preprocess
 from src.wqn import iswt, swt, transport_gain, wqn
 
@@ -59,14 +59,14 @@ def test_rhythmic_footstrikes_do_not_trigger():
 
 def test_ecg_not_used():
     import pathlib
-    for f in ("gate.py", "wqn.py", "option3.py"):
+    for f in ("gate.py", "wqn.py", "wqn_pipeline.py"):
         src = pathlib.Path("src", f).read_text()
         assert "rpeaks" not in src, f
     r = make_record(3, "walk", T=120)
     d, refs, _ = preprocess(r)
-    a = run_option3(r, d, refs, fs)["e"]
+    a = run_wqn(r, d, refs, fs)["e"]
     r["rpeaks_s"] = r["rpeaks_s"] + 7.0
-    assert np.array_equal(a, run_option3(r, d, refs, fs)["e"])
+    assert np.array_equal(a, run_wqn(r, d, refs, fs)["e"])
 
 
 def test_collision_no_hold_equals_nlms():

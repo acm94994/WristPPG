@@ -1,7 +1,7 @@
 """Figure 1 for the report: spectral overlap of motion and pulse in a real running record.
 
-    python fig1_overlap.py                   # s3_run (default)
-    python fig1_overlap.py --record s4_run
+    python -m figures.fig1_overlap                   # s3_run (default)
+    python -m figures.fig1_overlap --record s4_run
 
 Saves results/fig1_overlap.png and .pdf.
 (a) spectrogram of the band-passed raw PPG, with the ECG heart rate drawn on top;

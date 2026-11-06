@@ -69,7 +69,7 @@ records changed by more than 2 BPM, whole-record MAE
   hold 20 s  records 13  leftover vs adaptive  59.34  epsilon 0.73
   hold 40 s  records 13  leftover vs adaptive  41.71  epsilon 0.56
 
-=== OPTION 3 ===
+=== IMU-gated WQN ===
 events 71 over 111 min = 0.64/min; no_reference 39%; anc_gain>1 in 15%
   ANC         MAE  23.90  event F1 0.359
   WQN-res     MAE  26.73  event F1 0.332

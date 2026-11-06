@@ -1,4 +1,4 @@
-"""Option 3: IMU-gated WQN on the ANC residual.
+"""IMU-gated WQN on the ANC residual.
 
   rec -> preprocess -> NLMS -> jerk gate + residual check -> reference selection -> SWT-WQN
 
@@ -42,7 +42,7 @@ def clean(e, refs, fs, zj, cfg, mode="both", runs=None, hr=None, t_hr=None, wqn_
     return wqn(e, intervals, fs, **(wqn_kw or {})), runs, report
 
 
-def run_option3(rec, d, refs, fs, L=16, mu=0.01, cfg=None, mode="both", freeze=False):
+def run_wqn(rec, d, refs, fs, L=16, mu=0.01, cfg=None, mode="both", freeze=False):
     """Returns dict(e_anc, e, runs, report). freeze=True re-runs NLMS with mu=0 on artifacts."""
     cfg = cfg or GateConfig()
     e_anc, _ = nlms(d, refs, L=L, mu=mu)

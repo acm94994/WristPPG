@@ -6,8 +6,8 @@ Cases per record:
   forearm_zeroed    the forearm accelerometer axis set to zero (strongest single axis)
   no_gyro           all gyroscope channels set to zero (also zeroes |w|)
 
-    python robustness.py                # needs results/loso_params.csv (python tune.py)
-    python robustness.py --n-rot 3      # faster (cut order in DECISIONS.md)
+    python -m experiments.robustness                # needs results/loso_params.csv (python -m experiments.tune)
+    python -m experiments.robustness --n-rot 3      # faster
 
 Appends one row per (method, case, record) to results/robustness.csv as runs finish, so an
 interrupted run picks up where it stopped. The summary table is T5 in tables.py.

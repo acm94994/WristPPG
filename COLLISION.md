@@ -8,8 +8,8 @@ removes pulse when HR is close to cadence. Holding the weights, or cutting mu, r
     pass 2:  NLMS with mu * 0.1 (or weights held) inside the hold
     tracker: optional, stop down-weighting motion bins inside the hold  <- risky, see below
 
-Files: `src/collision.py`, `src/loso.py`, `sim/collision_sim.py`, `run_collision_sim.py`, `analyze_collision.py`,
-`run_collision.py`, `make_collision_figure.py`. It is offline because it uses two passes.
+Files: `src/collision.py`, `src/loso.py`, `sim/collision_sim.py`, `experiments/run_collision_sim.py`,
+`analysis/analyze_collision.py`, `experiments/run_collision.py`, `figures/collision_figure.py`. It is offline because it uses two passes.
 
 Why the gate reads y and not the IMU peak: the dominant IMU frequency was sometimes the wrong
 harmonic, while y shows where the notches really are. The gate must also be wider than the tracker's
@@ -113,8 +113,8 @@ gating to the main method. This is Section 8 of the project report, which lives 
 (DSP_PPG/), not in this repo.
 
 ## Run on real data
-    python run_collision.py --data data --out results/collision --loso results/loso_params.csv
-    python run_collision.py --data data --out results/collision_oracle --loso results/loso_params.csv --gate-hr ecg
+    python -m experiments.run_collision --data data --out results/collision --loso results/loso_params.csv
+    python -m experiments.run_collision --data data --out results/collision_oracle --loso results/loso_params.csv --gate-hr ecg
 
 1. `census.csv`: how much time is within 6 and 15 BPM of a cancelled line, and for how long, plus mean
    tracked and true HR inside the zone.

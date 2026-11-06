@@ -1,12 +1,12 @@
 """Report figures (run after run_all.py and robustness.py).
 
-    python plots.py                    # learning curves for s3_run
-    python plots.py --record s4_run    # a different example record
+    python -m figures.plots                    # learning curves for s3_run
+    python -m figures.plots --record s4_run    # a different example record
 
 Outputs (results/, PNG + PDF):
   fig_learning_curves   smoothed e^2 vs time, one line per method, for one record
   fig_robustness        MAE under rotation / dropped channels, NLMS-all vs CW-NLMS
-For the spectrogram example figures use diag.py (e.g. python diag.py data/s3_walk).
+For the spectrogram example figures use tools/diag.py (e.g. python -m tools.diag data/s3_walk).
 """
 import argparse
 import numpy as np

@@ -1,6 +1,6 @@
 """Semi-synthetic experiment. Usage:
-   python run_sim.py dev    (grid search on dev seeds, writes results/dev.csv)
-   python run_sim.py test   (locked settings on untouched test seeds, writes results/test.csv)
+   python -m experiments.run_wqn_sim dev    (grid search on dev seeds, writes results/dev.csv)
+   python -m experiments.run_wqn_sim test   (locked settings on untouched test seeds, writes results/test.csv)
 """
 import csv, json, os, sys
 from multiprocessing import Pool
@@ -10,8 +10,8 @@ from sim.semisynth import make_record
 from src.filters import nlms
 from src.gate import GateConfig, find_artifacts
 from src.hr import track_hr
-from src.option3 import clean, jerk_z
-from src.option3_eval import beat_f1, beats, hr_mae, match_lag, windows_mask
+from src.wqn_pipeline import clean, jerk_z
+from src.extension_score import beat_f1, beats, hr_mae, match_lag, windows_mask
 from src.preprocess import _bandpass, _resample, preprocess
 from src.wqn import universal_soft
 

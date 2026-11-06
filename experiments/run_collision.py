@@ -1,14 +1,14 @@
 """Collision-aware adaptation on the real Wrist PPG During Exercise records.
 
-  python run_collision.py --data data --out results/collision --loso results/loso_params.csv
-  python run_collision.py --data data --out results/collision_oracle --loso results/loso_params.csv --gate-hr ecg
+  python -m experiments.run_collision --data data --out results/collision --loso results/loso_params.csv
+  python -m experiments.run_collision --data data --out results/collision_oracle --loso results/loso_params.csv --gate-hr ecg
 
 Writes
   census.csv    how much time each record spends in a collision, and how long collisions last
   scores.csv    HR MAE overall and in collision zones, beat F1 in zones, by method
   holdtest.csv  how fast held weights go stale, away from collisions
 
-ECG reaches only the census and scoring here, through src/option3_eval.py. It never enters the
+ECG reaches only the census and scoring here, through src/extension_score.py. It never enters the
 gate, the filter or the tracker, except with --gate-hr ecg: that gives the gate the true HR, as an
 upper bound on what gating could do. It is not a usable method.
 """
@@ -20,7 +20,7 @@ from src.filters import nlms
 from src.hr import track_hr
 from src.load import list_records, load_record
 from src.loso import loso_params
-from src.option3_eval import beat_f1, beats, hr_mae, match_lag, ref_hr
+from src.extension_score import beat_f1, beats, hr_mae, match_lag, ref_hr
 from src.preprocess import preprocess
 
 fs = 64

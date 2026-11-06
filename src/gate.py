@@ -1,4 +1,4 @@
-"""Option 3 gates: which samples are artifact, and which stretch is a clean reference.
+"""IMU-gated WQN gates: which samples are artifact, and which stretch is a clean reference.
 PPG + IMU only. ECG is never used here.
 """
 from dataclasses import dataclass

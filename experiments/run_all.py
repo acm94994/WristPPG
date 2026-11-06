@@ -1,7 +1,7 @@
 """Run every tuned method on its held-out subjects (main results).
 
-    python run_all.py                  # needs results/loso_params.csv  (python tune.py)
-    python run_all.py --methods NLMS-all CW-NLMS
+    python -m experiments.run_all                  # needs results/loso_params.csv  (python -m experiments.tune)
+    python -m experiments.run_all --methods NLMS-all CW-NLMS
 
 For each method and LOSO fold, the config chosen on the training subjects runs once on the
 held-out subject's records:
@@ -62,7 +62,7 @@ if __name__ == "__main__":
     sel = pd.read_csv(os.path.join(OUT, "loso_params.csv"))
     missing = set(args.methods) - set(sel["method"])
     if missing:
-        raise SystemExit(f"not tuned yet: {sorted(missing)}; run python tune.py --methods ...")
+        raise SystemExit(f"not tuned yet: {sorted(missing)}; run python -m experiments.tune --methods ...")
     records = list_records(DATA)
     jobs = build_jobs(sel, args.methods, records)
     print(f"{len(jobs)} runs")

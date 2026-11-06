@@ -1,10 +1,10 @@
-"""Option 3 on the real Wrist PPG During Exercise records.
+"""IMU-gated WQN on the real Wrist PPG During Exercise records.
 
-  python run_option3.py --data data --out results/option3 --loso results/loso_params.csv
+  python -m experiments.run_wqn --data data --out results/wqn --loso results/loso_params.csv
   add --inject for known-truth injections
-  python run_option3.py --data data --out results/option3 --grid     # LOSO choice of k_imu, k_res
+  python -m experiments.run_wqn --data data --out results/wqn --grid     # LOSO choice of k_imu, k_res
 
-ECG is read only through src/option3_eval.py.
+ECG is read only through src/extension_score.py.
 """
 import argparse, csv, json, os
 import numpy as np
@@ -14,8 +14,8 @@ from src.gate import GateConfig, find_artifacts
 from src.hr import track_hr
 from src.load import list_records, load_record
 from src.loso import loso_params
-from src.option3 import clean, jerk_z
-from src.option3_eval import beat_f1, beats, hr_mae, match_lag, windows_mask
+from src.wqn_pipeline import clean, jerk_z
+from src.extension_score import beat_f1, beats, hr_mae, match_lag, windows_mask
 from src.preprocess import _bandpass, _resample, preprocess
 from src.wqn import universal_soft
 
@@ -161,7 +161,7 @@ def summary(rows, keys):
 if __name__ == "__main__":
     p = argparse.ArgumentParser()
     p.add_argument("--data", default="data")
-    p.add_argument("--out", default="results/option3")
+    p.add_argument("--out", default="results/wqn")
     p.add_argument("--records", default="")
     p.add_argument("--loso", default="", help="use each subject's held-out NLMS-all settings")
     p.add_argument("--L", type=int, default=16)
