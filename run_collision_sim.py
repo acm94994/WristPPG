@@ -1,6 +1,7 @@
 """Collision experiment on synthetic records.
    python run_collision_sim.py dev    grid on dev seeds, all scenarios pooled
    python run_collision_sim.py test   locked settings on untouched test seeds
+   python run_collision_sim.py leak   sweep of uncancellable motion, on further held-out seeds
    python run_collision_sim.py drift  sensitivity to coupling drift, on the test seeds
 """
 import csv, json, sys

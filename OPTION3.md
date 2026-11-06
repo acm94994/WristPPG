@@ -18,9 +18,8 @@ Target: short jerks that survive the canceller. It is not meant to solve cadence
 | Scoring | `src/option3_eval.py` | The only new file that touches ECG |
 
 ## Run on real data
-Copy these files into the repo (they add files and overwrite nothing), then:
+From the repo root:
 
-    pip install PyWavelets
     python -m tests.test_option3
     python run_option3.py --data data --out results/option3 --loso results/loso_params.csv --inject
     python run_option3.py --data data --out results/option3 --loso results/loso_params.csv --grid
