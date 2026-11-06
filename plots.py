@@ -42,7 +42,7 @@ for m in METHODS:                                           # fixed order -> fix
 ax.set_yscale("log")
 ax.set_xlabel("time (s)")
 ax.set_ylabel("e² (2 s moving avg)")
-ax.set_title(f"Learning curves, {a.record}")
+ax.set_title(f"Residual power over time, {a.record}")
 ax.legend(fontsize=7, frameon=False, loc="center left", bbox_to_anchor=(1.0, 0.5))   # outside the axes
 save(fig, "fig_learning_curves")
 

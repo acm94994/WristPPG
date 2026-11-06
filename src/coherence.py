@@ -1,14 +1,16 @@
 """Magnitude-squared coherence (MSC) weights for CW-NLMS (DECISIONS M4-M7).
 
 Per 8 s window (2 s step): MSC between each IMU reference and the raw PPG, averaged over
-0.5-4 Hz; values below tau set to 0. Uses PPG + IMU only, never ECG.
+0.4-4 Hz (the band-pass band); values below tau set to 0. Uses PPG + IMU only, never ECG.
+At fs = 64 Hz the 4 s segments give 0.25 Hz bins, so the first bin used is 0.5 Hz: results are
+identical to the earlier 0.5-4 Hz setting.
 """
 import numpy as np
 from scipy.signal import coherence
 from src.hr import window_starts
 
 
-def msc_weights(d, refs, fs, tau=0.3, win_s=8, step_s=2, band=(0.5, 4.0)):
+def msc_weights(d, refs, fs, tau=0.3, win_s=8, step_s=2, band=(0.4, 4.0)):
     """d (N,), refs (N, C) -> W (n_windows, C), starts (n_windows,), win (samples)"""
     starts, win = window_starts(len(d), fs, win_s, step_s)
     nper = int(win_s * fs / 2)                       # 4 s segments, 75 % overlap -> 5 segments
