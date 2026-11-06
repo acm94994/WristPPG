@@ -27,7 +27,8 @@ def stat(m, metric, scens, acts=("walk", "run", "bike")):
 
 
 def level(m, metric, scens, acts=("walk", "run", "bike")):
-    return np.nanmean([r[metric] for r in rows if r["method"] == m and r["scen"] in scens and r["act"] in acts])
+    v = np.array([r[metric] for r in rows if r["method"] == m and r["scen"] in scens and r["act"] in acts])
+    return np.nanmean(v) if np.isfinite(v).any() else np.nan     # control has no zone: nan, no warning
 
 
 for metric in ("mae", "mae_zone", "rmse_zone", "f1_zone"):

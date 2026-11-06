@@ -113,8 +113,6 @@ near+8    ANC: 2.78/2.76 aware-only: 2.33/1.19 hold: 2.83/2.69 hold+aware: 2.44/
 near-8    ANC: 2.93/2.73 aware-only: 2.48/1.19 hold: 2.99/2.66 hold+aware: 2.59/1.26  hold% 21.9
 near+12   ANC: 2.34/1.22 aware-only: 2.19/0.72 hold: 2.39/1.19 hold+aware: 2.29/0.79  hold% 15.3
 near-12   ANC: 2.54/1.27 aware-only: 2.37/0.71 hold: 2.55/1.21 hold+aware: 2.40/0.68  hold% 14.8
-/home/claude/p3/analyze_collision.py:30: RuntimeWarning: Mean of empty slice
-  return np.nanmean([r[metric] for r in rows if r["method"] == m and r["scen"] in scens and r["act"] in acts])
 control   ANC: 17.39/nan aware-only: 17.39/nan hold: 17.40/nan hold+aware: 17.40/nan  hold% 0.1
 
 worst records, hold+aware minus ANC whole-record MAE

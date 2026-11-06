@@ -51,6 +51,12 @@ print("records:", len(base))
 cfg = json.load(open("results/locked.json"))
 
 
+def _nanmean(v):
+    """nan when every value is nan (no events at rate 0), without a RuntimeWarning."""
+    v = np.asarray(v, float)
+    return np.nanmean(v) if np.isfinite(v).any() else np.nan
+
+
 def job(a):
     return evaluate(cfg["gate"], cfg["L"], cfg["mu"], a[0], a[1], ("ANC", "WQN-both", "WQN-res", "WQN-oracle"), jerks=a[2])
 
@@ -66,5 +72,5 @@ if __name__ == "__main__":
             line = f"  nominal {rate:6.1f} measured {n:.1f}/min "
             for m in ("ANC", "WQN-both", "WQN-res", "WQN-oracle"):
                 q = [r for r in res if r["method"] == m]
-                line += f" {m}: mae {np.mean([r['mae'] for r in q]):.2f} f1 {np.nanmean([r['f1_art'] for r in q]):.3f} |"
+                line += f" {m}: mae {np.mean([r['mae'] for r in q]):.2f} f1 {_nanmean([r['f1_art'] for r in q]):.3f} |"
             print(line, flush=True)

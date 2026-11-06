@@ -67,10 +67,7 @@ events: {'n_coupled': 368, 'n_ppg': 122, 'n_imu': 152, 'n_surge': 117}
 records: 120
 
 stress: nominal rate vs measured rate (the simulator keeps events at least 12 s apart)
-/home/claude/p3/analyze.py:68: RuntimeWarning: Mean of empty slice
-  line += f" {m}: mae {np.mean([r['mae'] for r in q]):.2f} f1 {np.nanmean([r['f1_art'] for r in q]):.3f} |"
   nominal    0.0 measured 0.0/min  ANC: mae 2.35 f1 nan | WQN-both: mae 2.35 f1 nan | WQN-res: mae 2.38 f1 nan | WQN-oracle: mae 2.35 f1 nan |
   nominal    2.0 measured 1.6/min  ANC: mae 2.35 f1 0.912 | WQN-both: mae 2.35 f1 0.937 | WQN-res: mae 2.36 f1 0.945 | WQN-oracle: mae 2.35 f1 0.941 |
   nominal    5.0 measured 2.9/min  ANC: mae 2.46 f1 0.907 | WQN-both: mae 2.47 f1 0.925 | WQN-res: mae 2.47 f1 0.935 | WQN-oracle: mae 2.47 f1 0.934 |
   nominal   10.0 measured 3.7/min  ANC: mae 2.45 f1 0.903 | WQN-both: mae 2.42 f1 0.919 | WQN-res: mae 2.42 f1 0.923 | WQN-oracle: mae 2.44 f1 0.932 |
-HR MAE on perfectly clean pulse: with motion down-weighting 2.07  without 0.51
