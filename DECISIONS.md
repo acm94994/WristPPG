@@ -74,3 +74,8 @@ Status: `used` = adopted as first written and used unchanged in the reported res
 - Gate lines come from a pilot NLMS at mu = 0.01, because a fast filter also tracks the pulse. Fixed before scoring.
 - Gate settings were locked on synthetic development seeds. Real data used held-out NLMS-all settings from results/loso_params.csv.
 - Collision gate on tracked HR never fired on s4_run (tracked 147 vs true 173 BPM in the zone). ECG-gated upper bound (run_collision.py --gate-hr ecg) also failed to beat NLMS-all, so the negative result stands. Reported as Section 8 of the project report; the report and its generator live with the report, not in this repo.
+
+## Ablation (6 Nov 2026)
+- Prompted by review: CW-NLMS adapts with mu[n] = mu0 * mean(c), so its effective step size (about 0.24 at mu0 = 0.5) lies between NLMS-all's grid values 0.1 and 0.5, and could explain its gain.
+- `experiments/ablation.py`: NLMS-all with a per-record constant mu matched to CW-NLMS; NLMS-all with mu in {0.2, 0.3} added to the grid; CW-NLMS with weights only (vss=False), step size only (weight_refs=False), and tau > 0; each of the 8 references removed in turn. All variants use the same LOSO selection (split = subject).
+- Result: the gain comes from the coherence-driven step size (step only 17.5, matched-mu NLMS-all 18.3, weights only 23.2, CW-NLMS 17.8 BPM pooled). LOSO choices in the s5 and s8 folds raise the held-out MAE of both NLMS-all and CW-NLMS by several BPM. See results/ablation/summary.md.

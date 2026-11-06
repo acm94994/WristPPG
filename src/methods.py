@@ -38,7 +38,12 @@ def _hk_refs(rec, ax, fs_out):
     return _zs(_bandpass(_resample(raw, rec["fs"], fs_out), fs_out))
 
 
-def run_method(name, rec, mu=0.01, L=16, tau=0.3, vss=True, lam=0.999):
+def run_method(name, rec, mu=0.01, L=16, tau=0.3, vss=True, lam=0.999, weight_refs=True, drop=None):
+    """Ablation switches (defaults give the methods of the report):
+      vss=False         CW-NLMS with a fixed step size mu (coherence weights only)
+      weight_refs=False CW-NLMS with uniform reference weights (coherence-driven step size only)
+      drop=k            remove reference k (REF_NAMES order) from the canceller of NLMS-all,
+                        RLS-all or CW-NLMS; the HR tracker still sees all IMU channels"""
     ax = forearm_axis(rec["acc"])
 
     if name == "LMS-HK":
@@ -55,19 +60,20 @@ def run_method(name, rec, mu=0.01, L=16, tau=0.3, vss=True, lam=0.999):
     else:
         fs = 64
         d, refs, _ = preprocess(rec, fs_out=fs)
+        cref = refs if drop is None else np.delete(refs, int(drop), axis=1)   # canceller references
         if name == "RAW":
             e, err2 = d, d ** 2
         elif name == "NLMS-1":
             e, err2 = nlms(d, refs[:, ax], L=L, mu=mu)
         elif name == "NLMS-all":
-            e, err2 = nlms(d, refs, L=L, mu=mu)
+            e, err2 = nlms(d, cref, L=L, mu=mu)
         elif name == "RLS-all":
-            e, err2 = rls(d, refs, L=L, lam=lam)
+            e, err2 = rls(d, cref, L=L, lam=lam)
         elif name == "CW-NLMS":
-            Wwin, starts, win = msc_weights(d, refs, fs, tau=tau)
+            Wwin, starts, win = msc_weights(d, cref, fs, tau=tau)
             W = per_sample(Wwin, starts, win, len(d), step=2 * fs)
             mu_n = mu * W.mean(1) if vss else mu          # M7: adapt less when nothing is coherent
-            e, err2 = nlms(d, refs, L=L, mu=mu_n, weights=W)
+            e, err2 = nlms(d, cref, L=L, mu=mu_n, weights=W if weight_refs else None)
             hr, t = track_hr(e, fs, motion=refs)
             return {"hr": hr, "t": t, "e": e, "err2": err2, "fs": fs, "msc": Wwin}
         else:

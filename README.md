@@ -45,6 +45,13 @@ python -m tools.diag data/s3_walk  # spectrogram diagnostics for one record
 Each step only reads what the previous ones wrote, so any step can be rerun on its own.
 `experiments.tune` and `experiments.run_all` take `--methods` to (re)run a subset.
 
+## Ablation of CW-NLMS
+```
+python -m experiments.ablation     # step-size controls, component and channel ablation -> results/ablation/
+```
+Needs `results/grid/` and `results/loso_params.csv` from `experiments.tune`. Variants are selected by the
+same leave-one-subject-out procedure as the main methods; `results/ablation/summary.md` collects the tables.
+
 ## Extensions: heart rate near the cadence
 Two extensions, each with a decision rule fixed before scoring; see COLLISION.md and WQN.md. Settings are
 locked on synthetic data first, then applied once to the real records.
